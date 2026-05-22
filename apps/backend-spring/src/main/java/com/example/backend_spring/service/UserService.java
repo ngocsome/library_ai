@@ -28,15 +28,21 @@ public class UserService {
         User user = findByUsername(username);
 
         if (request.getFullName() != null && !request.getFullName().isBlank()) {
-            user.setFullName(request.getFullName());
+            user.setFullName(request.getFullName().trim());
         }
 
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            if (!request.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            String newEmail = request.getEmail().trim();
+
+            if (!newEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
                 throw new RuntimeException("Email đã tồn tại");
             }
 
-            user.setEmail(request.getEmail());
+            user.setEmail(newEmail);
+        }
+
+        if (request.getMajor() != null) {
+            user.setMajor(request.getMajor().trim());
         }
 
         User savedUser = userRepository.save(user);
@@ -91,6 +97,9 @@ public class UserService {
 
                 .fullName(user.getFullName())
                 .FullName(user.getFullName())
+
+                .major(user.getMajor())
+                .Major(user.getMajor())
 
                 .role(user.getRole())
                 .RoleID(roleId)

@@ -1,54 +1,54 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import MainLayout from './layouts/MainLayout';
+
 import AuthLayout from './layouts/AuthLayout';
+import MainLayout from './layouts/MainLayout';
+import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
-// Auth Pages
+// Auth pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
-// User Pages
+// User pages
 import ProfilePage from './pages/user/ProfilePage';
 
-// Library Pages
+// Library pages
 import LibraryPage from './pages/library/LibraryPage';
 import DocumentDetailPage from './pages/library/DocumentDetailPage';
 import FavoritesPage from './pages/library/FavoritesPage';
 
-// Forum Pages
+// Forum pages
 import ForumPage from './pages/forum/ForumPage';
 import CreatePostPage from './pages/forum/CreatePostPage';
 import PostDetailPage from './pages/forum/PostDetailPage';
 
-// Group Pages
+// Group pages
 import GroupListPage from './pages/groups/GroupListPage';
 import GroupDetailPage from './pages/groups/GroupDetailPage';
 
-// AI Pages
+// AI pages
 import AIChatPage from './pages/ai/AIChatPage';
 
-// Admin Pages
+// Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminDocuments from './pages/admin/AdminDocuments';
 import AdminForum from './pages/admin/AdminForum';
 
-// System Pages
+// System pages
 import NotificationsPage from './pages/system/NotificationsPage';
 import AnalyticsPage from './pages/system/AnalyticsPage';
-import NotFoundPage from './pages/system/NotFoundPage';
 import ForbiddenPage from './pages/system/ForbiddenPage';
-
-import AdminLayout from './layouts/AdminLayout';
+import NotFoundPage from './pages/system/NotFoundPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth Routes */}
+        {/* Auth routes: KHÔNG được đặt trong AdminLayout */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -56,55 +56,45 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
-        {/* Main Application Routes */}
+        {/* User routes */}
         <Route element={<ProtectedRoute />}>
-          {/* General App Layout */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<Navigate to="/library" replace />} />
-            
-            {/* User */}
             <Route path="/profile" element={<ProfilePage />} />
 
-            {/* Library */}
             <Route path="/library" element={<LibraryPage />} />
             <Route path="/library/:docId" element={<DocumentDetailPage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
 
-            {/* Forum */}
             <Route path="/forum" element={<ForumPage />} />
             <Route path="/forum/create" element={<CreatePostPage />} />
             <Route path="/forum/:postId" element={<PostDetailPage />} />
 
-            {/* Groups */}
             <Route path="/groups" element={<GroupListPage />} />
             <Route path="/groups/:groupId" element={<GroupDetailPage />} />
 
-            {/* AI */}
             <Route path="/ai" element={<AIChatPage />} />
 
-            {/* System Pages */}
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/403" element={<ForbiddenPage />} />
           </Route>
+        </Route>
 
-          {/* Admin Layout - Only for Admin (RoleID: 1) */}
-          <Route element={<ProtectedRoute allowedRoles={[1]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/documents" element={<AdminDocuments />} />
-              <Route path="/admin/forum" element={<AdminForum />} />
-            </Route>
+        {/* Admin routes */}
+        <Route element={<ProtectedRoute allowedRoles={[1, '1', 'ADMIN', 'ROLE_ADMIN']} />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/documents" element={<AdminDocuments />} />
+            <Route path="/admin/forum" element={<AdminForum />} />
           </Route>
         </Route>
 
-        {/* Catch-all */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-      
-      {/* Toast Notifications */}
-      <Toaster 
+
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,

@@ -24,6 +24,9 @@ public class UserProfileResponse {
     private String fullName;
     private String FullName;
 
+    private String major;
+    private String Major;
+
     private Role role;
     private Integer RoleID;
 

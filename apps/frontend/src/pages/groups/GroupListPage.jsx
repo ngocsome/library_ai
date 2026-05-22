@@ -1,47 +1,260 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Search, PlusCircle, Loader2 } from 'lucide-react';
-import { getGroups } from '../../services/groupService';
+import {
+  Check,
+  Loader2,
+  PlusCircle,
+  Search,
+  Users,
+  X,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { createGroup, getGroups, joinGroup } from '../../services/groupService';
+
+const emptyForm = () => ({
+  name: '',
+  subject: '',
+  description: '',
+});
+
+const getGroupId = (group) => group.GroupID || group.groupId || group.id;
+const getGroupName = (group) => group.Name || group.name || 'Nhóm học tập';
+const getGroupSubject = (group) => group.Subject || group.subject || 'Chung';
+const getGroupDescription = (group) =>
+  group.Description || group.description || 'Chưa có mô tả cho nhóm này.';
+const getMemberCount = (group) =>
+  group.MemberCount ?? group.memberCount ?? group._count?.GroupMembers ?? 0;
+const getIsPrivate = (group) => group.IsPrivate || group.isPrivate || false;
+
+const CreateGroupModal = ({
+  open,
+  form,
+  submitting,
+  onClose,
+  onChange,
+  onSubmit,
+}) => {
+  if (!open) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: 20 }}
+          className="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden"
+        >
+          <div className="p-6 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center">
+                <Users size={22} />
+              </div>
+
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Tạo nhóm học tập mới
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Tạo không gian trao đổi tài liệu và thảo luận với bạn bè.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <form onSubmit={onSubmit} className="p-6 space-y-5">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Tên nhóm <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={onChange}
+                required
+                placeholder="Ví dụ: Nhóm ôn tập Java Spring Boot"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-brand-green/20"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Chủ đề
+              </label>
+              <input
+                name="subject"
+                value={form.subject}
+                onChange={onChange}
+                placeholder="Ví dụ: Lập trình Java, Cơ sở dữ liệu, Ngoại ngữ..."
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-brand-green/20"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Mô tả nhóm
+              </label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={onChange}
+                rows="4"
+                placeholder="Mô tả mục đích của nhóm..."
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-brand-green/20 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={submitting}
+                className="flex-1 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold disabled:opacity-50"
+              >
+                Hủy
+              </button>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-[2] py-3 rounded-2xl bg-brand-green hover:bg-green-700 text-white text-sm font-bold shadow-lg disabled:bg-green-300 flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <PlusCircle size={18} />
+                    Tạo nhóm
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
 
 const GroupListPage = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [joiningId, setJoiningId] = useState(null);
+
+  const fetchGroups = async () => {
+    try {
+      setLoading(true);
+      const data = await getGroups();
+      setGroups(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to load groups', error);
+      toast.error('Không thể tải danh sách nhóm học tập');
+      setGroups([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      setLoading(true);
-
-      try {
-        const data = await getGroups();
-        setGroups(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Failed to load groups', error);
-        setGroups([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchGroups();
   }, []);
 
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const closeModal = () => {
+    if (submitting) return;
+    setModalOpen(false);
+    setForm(emptyForm());
+  };
+
+  const handleCreateGroup = async (event) => {
+    event.preventDefault();
+
+    if (!form.name.trim()) {
+      toast.error('Vui lòng nhập tên nhóm');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const createdGroup = await createGroup({
+        name: form.name.trim(),
+        subject: form.subject.trim(),
+        description: form.description.trim(),
+      });
+
+      setGroups((prev) => [createdGroup, ...prev]);
+      toast.success('Tạo nhóm học tập thành công');
+      closeModal();
+    } catch (error) {
+      console.error('Create group failed', error);
+      toast.error(error.response?.data?.message || 'Tạo nhóm thất bại');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleJoinGroup = async (event, group) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const groupId = getGroupId(group);
+    if (!groupId) {
+      toast.error('Không tìm thấy ID nhóm');
+      return;
+    }
+
+    try {
+      setJoiningId(groupId);
+      const response = await joinGroup(groupId);
+      toast.success(response?.message || 'Tham gia nhóm thành công');
+      await fetchGroups();
+    } catch (error) {
+      console.error('Join group failed', error);
+      toast.error(error.response?.data?.message || 'Tham gia nhóm thất bại');
+    } finally {
+      setJoiningId(null);
+    }
+  };
+
   const filteredGroups = groups.filter((group) => {
-    const name = group.Name || group.name || '';
-    const description = group.Description || group.description || '';
-    const subject = group.Subject || group.subject || '';
-    const keyword = searchTerm.toLowerCase();
+    const name = getGroupName(group).toLowerCase();
+    const description = getGroupDescription(group).toLowerCase();
+    const subject = getGroupSubject(group).toLowerCase();
+    const keyword = searchTerm.trim().toLowerCase();
 
     return (
-      name.toLowerCase().includes(keyword) ||
-      description.toLowerCase().includes(keyword) ||
-      subject.toLowerCase().includes(keyword)
+      !keyword ||
+      name.includes(keyword) ||
+      description.includes(keyword) ||
+      subject.includes(keyword)
     );
   });
 
   return (
     <div className="container mx-auto px-6 pt-24 pb-12 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Nhóm học tập</h1>
           <p className="text-gray-500 text-sm">
@@ -49,7 +262,11 @@ const GroupListPage = () => {
           </p>
         </div>
 
-        <button className="px-4 py-2 bg-brand-green text-white rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors shadow-sm">
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="px-4 py-2 bg-brand-green text-white rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors shadow-sm font-medium"
+        >
           <PlusCircle size={20} />
           Tạo nhóm mới
         </button>
@@ -77,16 +294,13 @@ const GroupListPage = () => {
       ) : filteredGroups.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGroups.map((group, idx) => {
-            const groupId = group.GroupID || group.id;
-            const name = group.Name || group.name || 'Nhóm học tập';
-            const description =
-              group.Description ||
-              group.description ||
-              'Chưa có mô tả cho nhóm này.';
-            const subject = group.Subject || group.subject || 'Chung';
-            const memberCount =
-              group.MemberCount ?? group.memberCount ?? group._count?.GroupMembers ?? 0;
-            const isPrivate = group.IsPrivate || group.isPrivate || false;
+            const groupId = getGroupId(group);
+            const name = getGroupName(group);
+            const description = getGroupDescription(group);
+            const subject = getGroupSubject(group);
+            const memberCount = getMemberCount(group);
+            const isPrivate = getIsPrivate(group);
+            const isJoining = String(joiningId) === String(groupId);
 
             return (
               <Link
@@ -121,19 +335,43 @@ const GroupListPage = () => {
                     {memberCount} thành viên
                   </span>
 
-                  <span className="text-sm text-brand-green font-medium group-hover:underline">
-                    Tham gia
-                  </span>
+                  <button
+                    type="button"
+                    onClick={(event) => handleJoinGroup(event, group)}
+                    disabled={isJoining}
+                    className="text-sm text-brand-green font-medium hover:underline disabled:opacity-60 flex items-center gap-1"
+                  >
+                    {isJoining ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        Đang tham gia
+                      </>
+                    ) : (
+                      <>
+                        <Check size={14} />
+                        Tham gia
+                      </>
+                    )}
+                  </button>
                 </div>
               </Link>
             );
           })}
         </div>
       ) : (
-        <div className="text-center text-gray-500 py-10">
+        <div className="text-center text-gray-500 py-20 bg-white rounded-xl border border-dashed border-gray-200">
           Chưa có nhóm học tập nào.
         </div>
       )}
+
+      <CreateGroupModal
+        open={modalOpen}
+        form={form}
+        submitting={submitting}
+        onClose={closeModal}
+        onChange={handleChange}
+        onSubmit={handleCreateGroup}
+      />
     </div>
   );
 };
