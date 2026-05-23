@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
+  AlertTriangle,
   ArrowLeft,
   MessageSquare,
   ThumbsUp,
@@ -8,15 +9,148 @@ import {
   MoreVertical,
   Send,
   Loader2,
+  X,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import {
   getPostById,
   addComment,
   likePost,
   unlikePost,
+  reportPost,
 } from '../../services/forumService';
 import { useAuth } from '../../context/AuthContext';
+
+const reportReasons = [
+  'Spam/quảng cáo',
+  'Nội dung không phù hợp',
+  'Ngôn từ xúc phạm/thù ghét',
+  'Thông tin sai lệch',
+  'Vi phạm bản quyền',
+  'Khác',
+];
+
+const ReportModal = ({
+  open,
+  reason,
+  description,
+  submitting,
+  onClose,
+  onReasonChange,
+  onDescriptionChange,
+  onSubmit,
+}) => {
+  if (!open) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: 20 }}
+          className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden"
+        >
+          <div className="p-6 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+                <AlertTriangle size={22} />
+              </div>
+
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Báo cáo vi phạm
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Gửi báo cáo để quản trị viên xem xét bài viết này.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <form onSubmit={onSubmit} className="p-6 space-y-5">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Lý do báo cáo <span className="text-red-500">*</span>
+              </label>
+
+              <select
+                value={reason}
+                onChange={(event) => onReasonChange(event.target.value)}
+                required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-red-500/20"
+              >
+                <option value="">Chọn lý do</option>
+                {reportReasons.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Mô tả thêm
+              </label>
+
+              <textarea
+                value={description}
+                onChange={(event) => onDescriptionChange(event.target.value)}
+                rows="4"
+                placeholder="Bạn có thể mô tả rõ hơn lý do báo cáo..."
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-red-500/20 resize-none"
+              />
+            </div>
+
+            <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4 text-sm text-amber-700">
+              Báo cáo sai sự thật hoặc spam báo cáo có thể ảnh hưởng đến tài khoản của bạn.
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={submitting}
+                className="flex-1 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold disabled:opacity-50"
+              >
+                Hủy
+              </button>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-[2] py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-lg disabled:bg-red-300 flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Đang gửi...
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle size={18} />
+                    Gửi báo cáo
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
 
 const PostDetailPage = () => {
   const { postId } = useParams();
@@ -31,6 +165,12 @@ const PostDetailPage = () => {
 
   const [liked, setLiked] = useState(false);
   const [currentLikeCount, setCurrentLikeCount] = useState(0);
+
+  const [reportMenuOpen, setReportMenuOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const fetchPost = async () => {
     setLoading(true);
@@ -71,7 +211,7 @@ const PostDetailPage = () => {
       fetchPost();
     } catch (error) {
       console.error('Failed to post comment', error);
-      alert('Gửi bình luận thất bại');
+      alert(error.response?.data?.message || 'Gửi bình luận thất bại');
     }
   };
 
@@ -101,6 +241,51 @@ const PostDetailPage = () => {
     } catch (error) {
       console.error('Share failed', error);
       alert('Không thể copy link bài viết');
+    }
+  };
+
+  const openReportModal = () => {
+    if (!user) {
+      alert('Bạn cần đăng nhập để báo cáo bài viết');
+      return;
+    }
+
+    setReportMenuOpen(false);
+    setReportReason('');
+    setReportDescription('');
+    setReportModalOpen(true);
+  };
+
+  const closeReportModal = () => {
+    if (reportSubmitting) return;
+    setReportModalOpen(false);
+    setReportReason('');
+    setReportDescription('');
+  };
+
+  const handleSubmitReport = async (event) => {
+    event.preventDefault();
+
+    if (!reportReason.trim()) {
+      alert('Vui lòng chọn lý do báo cáo');
+      return;
+    }
+
+    try {
+      setReportSubmitting(true);
+
+      const result = await reportPost(postId, {
+        reason: reportReason,
+        description: reportDescription,
+      });
+
+      alert(result?.message || 'Đã gửi báo cáo vi phạm');
+      closeReportModal();
+    } catch (error) {
+      console.error('Report post failed', error);
+      alert(error.response?.data?.message || 'Gửi báo cáo thất bại');
+    } finally {
+      setReportSubmitting(false);
     }
   };
 
@@ -206,9 +391,28 @@ const PostDetailPage = () => {
             </div>
           </div>
 
-          <button className="text-gray-400 hover:bg-gray-100 p-1 rounded">
-            <MoreVertical size={20} />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setReportMenuOpen((prev) => !prev)}
+              className="text-gray-400 hover:bg-gray-100 p-1 rounded"
+            >
+              <MoreVertical size={20} />
+            </button>
+
+            {reportMenuOpen && (
+              <div className="absolute right-0 top-9 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={openReportModal}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 text-left"
+                >
+                  <AlertTriangle size={16} />
+                  Báo cáo vi phạm
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <h1 className="text-2xl font-bold text-gray-800 mb-4">{title}</h1>
@@ -409,6 +613,17 @@ const PostDetailPage = () => {
           </button>
         </div>
       </div>
+
+      <ReportModal
+        open={reportModalOpen}
+        reason={reportReason}
+        description={reportDescription}
+        submitting={reportSubmitting}
+        onClose={closeReportModal}
+        onReasonChange={setReportReason}
+        onDescriptionChange={setReportDescription}
+        onSubmit={handleSubmitReport}
+      />
     </div>
   );
 };

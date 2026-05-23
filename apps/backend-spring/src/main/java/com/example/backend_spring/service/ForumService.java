@@ -5,15 +5,19 @@ import com.example.backend_spring.entity.ForumCategory;
 import com.example.backend_spring.entity.ForumComment;
 import com.example.backend_spring.entity.ForumPost;
 import com.example.backend_spring.entity.ForumPostLike;
+import com.example.backend_spring.entity.ForumReport;
 import com.example.backend_spring.entity.User;
+import com.example.backend_spring.enums.ReportStatus;
 import com.example.backend_spring.repository.ForumCategoryRepository;
 import com.example.backend_spring.repository.ForumCommentRepository;
 import com.example.backend_spring.repository.ForumPostLikeRepository;
 import com.example.backend_spring.repository.ForumPostRepository;
+import com.example.backend_spring.repository.ForumReportRepository;
 import com.example.backend_spring.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +29,7 @@ public class ForumService {
     private final ForumPostRepository forumPostRepository;
     private final ForumCommentRepository forumCommentRepository;
     private final ForumPostLikeRepository forumPostLikeRepository;
+    private final ForumReportRepository forumReportRepository;
     private final UserRepository userRepository;
 
     public List<ForumCategoryResponse> getCategories() {
@@ -161,6 +166,54 @@ public class ForumService {
         );
     }
 
+    public Map<String, Object> reportPost(Long postId, Map<String, Object> request, String username) {
+        User reporter = getUserByUsername(username);
+
+        ForumPost post = forumPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết"));
+
+        String reason = getString(request, "reason");
+        String description = getString(request, "description");
+
+        if (reason.isBlank()) {
+            throw new RuntimeException("Vui lòng chọn lý do báo cáo");
+        }
+
+        boolean alreadyReported = forumReportRepository.existsByPostIdAndReporterIdAndStatus(
+                postId,
+                reporter.getId(),
+                ReportStatus.PENDING
+        );
+
+        if (alreadyReported) {
+            throw new RuntimeException("Bạn đã báo cáo bài viết này và đang chờ xử lý");
+        }
+
+        String contentPreview = buildContentPreview(post.getContent());
+        String reporterName = reporter.getUsername();
+
+        ForumReport report = ForumReport.builder()
+                .postId(post.getId())
+                .postTitle(post.getTitle())
+                .postContentPreview(contentPreview)
+                .reporterId(reporter.getId())
+                .reporterUsername(reporterName)
+                .reason(reason)
+                .description(description)
+                .status(ReportStatus.PENDING)
+                .build();
+
+        ForumReport savedReport = forumReportRepository.save(report);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Đã gửi báo cáo vi phạm. Quản trị viên sẽ xem xét sớm.");
+        response.put("reportId", savedReport.getId());
+        response.put("postId", savedReport.getPostId());
+        response.put("status", savedReport.getStatus().name());
+
+        return response;
+    }
+
     private User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
@@ -252,5 +305,23 @@ public class ForumService {
                 .createdAt(comment.getCreatedAt())
                 .CreatedAt(comment.getCreatedAt())
                 .build();
+    }
+
+    private String getString(Map<String, Object> request, String key) {
+        if (request == null) {
+            return "";
+        }
+
+        Object value = request.get(key);
+        return value == null ? "" : String.valueOf(value).trim();
+    }
+
+    private String buildContentPreview(String content) {
+        if (content == null || content.isBlank()) {
+            return "";
+        }
+
+        String normalized = content.replaceAll("\\s+", " ").trim();
+        return normalized.length() <= 250 ? normalized : normalized.substring(0, 250) + "...";
     }
 }

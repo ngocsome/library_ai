@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
-  Headphones,
+  Eye,
   User,
   ArrowRight,
   Star,
@@ -23,6 +23,12 @@ import {
   removeFavoriteDocument,
 } from '../../services/documentService';
 import logo from '../../assets/logo.png';
+
+const getViewCount = (doc) =>
+  Number(doc.ViewCount || doc.viewCount || doc.views || doc.Views || 0);
+
+const getFileType = (doc) =>
+  String(doc.FileType || doc.fileType || doc.type || doc.Type || 'file').toLowerCase();
 
 const LibraryPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -105,6 +111,40 @@ const LibraryPage = () => {
     });
   }, [documents, searchTerm]);
 
+  const libraryStats = useMemo(() => {
+    const totalViews = documents.reduce((sum, doc) => sum + getViewCount(doc), 0);
+    const fileTypeCount = new Set(
+      documents.map((doc) => getFileType(doc)).filter(Boolean)
+    ).size;
+
+    return [
+      {
+        icon: BookOpen,
+        value: documents.length,
+        suffix: '+',
+        label: 'Tài liệu',
+      },
+      {
+        icon: Eye,
+        value: totalViews,
+        suffix: '',
+        label: 'Lượt xem',
+      },
+      {
+        icon: Layers,
+        value: categories.length,
+        suffix: '+',
+        label: 'Danh mục',
+      },
+      {
+        icon: Grid,
+        value: fileTypeCount,
+        suffix: '+',
+        label: 'Loại file',
+      },
+    ];
+  }, [documents, categories]);
+
   return (
     <div className="min-h-screen relative bg-slate-50">
       <header className="relative pt-32 pb-20 px-6 overflow-hidden">
@@ -142,9 +182,9 @@ const LibraryPage = () => {
             transition={{ delay: 0.2 }}
             className="text-slate-600 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed font-medium"
           >
-            Truy cập hơn 1 triệu đầu sách, tài liệu nghiên cứu và sách nói chất
-            lượng cao. Được hỗ trợ bởi AI để cá nhân hóa hành trình học tập của
-            bạn.
+            Khám phá kho tài liệu số, giáo trình và tài liệu học tập được phân loại
+            theo danh mục. Tìm kiếm nhanh, lưu yêu thích và tải xuống dễ dàng
+            trong quá trình học tập của bạn.
           </motion.p>
 
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-16">
@@ -170,24 +210,20 @@ const LibraryPage = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            {[
-              { icon: BookOpen, value: documents.length + '+', label: 'Đầu sách' },
-              { icon: Headphones, value: '50k+', label: 'Giờ Audio' },
-              { icon: User, value: '200k+', label: 'Thành viên' },
-              { icon: Layers, value: '100+', label: 'Đối tác' },
-            ].map((stat, idx) => (
+            {libraryStats.map((stat, idx) => (
               <motion.div
-                key={idx}
+                key={stat.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + idx * 0.1 }}
-                className="flex items-center space-x-3 bg-white rounded-lg px-4 py-2 border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                className="flex items-center space-x-3 bg-white rounded-lg px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
               >
                 <stat.icon className="text-primary-600" size={20} />
 
                 <div>
                   <div className="text-slate-900 font-bold text-sm">
-                    {stat.value}
+                    {Number(stat.value || 0).toLocaleString('vi-VN')}
+                    {stat.suffix}
                   </div>
 
                   <div className="text-xs text-slate-500 font-medium">
@@ -284,7 +320,7 @@ const LibraryPage = () => {
                   <p className="text-sm text-slate-500 mt-1">
                     Kết quả tìm kiếm cho:{' '}
                     <span className="font-semibold text-primary-600">
-                      "{searchTerm}"
+                      &quot;{searchTerm}&quot;
                     </span>
                   </p>
                 )}
@@ -371,8 +407,7 @@ const LibraryPage = () => {
                   const documentId =
                     item.DocID || item.DocumentID || item.documentId || item.id;
                   const title = item.Title || item.title || 'Không có tiêu đề';
-                  const author =
-                    item.Author || item.author || 'Tác giả không rõ';
+                  const author = item.Author || item.author || 'Tác giả không rõ';
 
                   return (
                     <Link
@@ -436,19 +471,19 @@ const LibraryPage = () => {
               {
                 icon: Mic,
                 title: 'Chuyển đổi Text-to-Speech',
-                desc: 'Nghe bất kỳ cuốn sách nào với công nghệ AI giọng đọc tự nhiên, đa ngôn ngữ.',
+                desc: 'Nghe bất kỳ tài liệu nào với công nghệ AI giọng đọc tự nhiên, đa ngôn ngữ.',
                 colorClass: 'bg-primary-100 text-primary-600',
               },
               {
                 icon: Sparkles,
                 title: 'Gợi ý thông minh',
-                desc: 'Hệ thống phân tích thói quen đọc để đưa ra những cuốn sách phù hợp nhất với bạn.',
+                desc: 'Hệ thống phân tích thói quen đọc để đưa ra những tài liệu phù hợp nhất với bạn.',
                 colorClass: 'bg-accent-100 text-accent-600',
               },
               {
                 icon: Layers,
-                title: 'Đồng bộ đa nền tảng',
-                desc: 'Đọc liền mạch từ Web sang Mobile, Tablet mà không bị gián đoạn.',
+                title: 'Phân loại rõ ràng',
+                desc: 'Tài liệu được sắp xếp theo danh mục, loại file và chủ đề để dễ tìm kiếm.',
                 colorClass: 'bg-blue-100 text-blue-600',
               },
             ].map((feature, idx) => (
@@ -491,8 +526,7 @@ const LibraryPage = () => {
             </div>
 
             <p className="text-slate-500 text-sm leading-relaxed">
-              Nền tảng thư viện số hàng đầu, mang tri thức nhân loại đến gần bạn
-              hơn.
+              Nền tảng thư viện số hỗ trợ học tập, tra cứu và quản lý tài liệu dễ dàng hơn.
             </p>
           </div>
 
@@ -502,17 +536,17 @@ const LibraryPage = () => {
             <ul className="space-y-2 text-sm text-slate-500">
               <li>
                 <a href="#" className="hover:text-primary-600 transition-colors">
-                  Sách mới
+                  Tài liệu mới
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-primary-600 transition-colors">
-                  Bảng xếp hạng
+                  Tài liệu nổi bật
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-primary-600 transition-colors">
-                  Bộ sưu tập
+                  Danh mục tài liệu
                 </a>
               </li>
             </ul>

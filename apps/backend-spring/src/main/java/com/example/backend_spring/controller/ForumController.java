@@ -96,6 +96,20 @@ public class ForumController {
         }
     }
 
+    @PostMapping("/posts/{postId}/report")
+    public ResponseEntity<?> reportPost(
+            @PathVariable Long postId,
+            @RequestBody Map<String, Object> request,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(forumService.reportPost(postId, request, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     private String getUsernameFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 

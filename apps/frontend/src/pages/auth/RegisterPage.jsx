@@ -45,10 +45,17 @@ const RegisterPage = () => {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Đăng ký tài khoản</h2>
+      <div className="mb-8">
+        <h2 className="text-3xl font-black text-slate-900 mb-2 text-center tracking-tight">
+          Đăng ký tài khoản
+        </h2>
+        <p className="text-center text-slate-600 text-sm">
+          Tạo tài khoản để bắt đầu hành trình học tập
+        </p>
+      </div>
       
       {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 text-center border border-red-100">
+        <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm mb-6 text-center border border-red-200">
             {error}
         </div>
       )}
@@ -56,73 +63,73 @@ const RegisterPage = () => {
       <form onSubmit={handleRegister} className="space-y-4">
         
         {/* Role Selection */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-4 mb-6">
             <button 
                 type="button"
                 onClick={() => setRole('student')}
-                className={`flex flex-col items-center justify-center p-3 border rounded-lg transition-all ${role === 'student' ? 'border-brand-green bg-brand-green/5 text-brand-green' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${role === 'student' ? 'border-cyan-400 bg-cyan-50 text-cyan-700 shadow-md' : 'border-slate-300 text-slate-600 hover:bg-slate-50 hover:border-slate-400'}`}
             >
-                <User size={24} className="mb-1" />
-                <span className="text-sm font-medium">Sinh viên</span>
+                <User size={26} className="mb-2" strokeWidth={1.5} />
+                <span className="text-sm font-semibold">Sinh viên</span>
             </button>
             <button 
                 type="button"
                 onClick={() => setRole('teacher')}
-                className={`flex flex-col items-center justify-center p-3 border rounded-lg transition-all ${role === 'teacher' ? 'border-brand-green bg-brand-green/5 text-brand-green' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${role === 'teacher' ? 'border-blue-400 bg-blue-50 text-blue-700 shadow-md' : 'border-slate-300 text-slate-600 hover:bg-slate-50 hover:border-slate-400'}`}
             >
-                <Briefcase size={24} className="mb-1" />
-                <span className="text-sm font-medium">Giảng viên</span>
+                <Briefcase size={26} className="mb-2" strokeWidth={1.5} />
+                <span className="text-sm font-semibold">Giảng viên</span>
             </button>
         </div>
 
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">Họ và tên</label>
             <input 
               name="fullName"
               type="text" 
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all hover:bg-slate-100"
               placeholder="Nguyễn Văn A"
             />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email trường</label>
+          <label className="block text-sm font-semibold text-slate-900 mb-2">Email trường</label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               name="email"
               type="email" 
               required
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all hover:bg-slate-100"
               placeholder={role === 'student' ? "sv12345@tvu.edu.vn" : "gv.ten@tvu.edu.vn"}
             />
           </div>
         </div>
 
         <div>
-           <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+           <label className="block text-sm font-semibold text-slate-900 mb-2">Mật khẩu</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               name="password"
               type="password" 
               required
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all hover:bg-slate-100"
               placeholder="••••••••"
             />
           </div>
         </div>
 
         <div>
-           <label className="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
+           <label className="block text-sm font-semibold text-slate-900 mb-2">Xác nhận mật khẩu</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               name="confirmPassword"
               type="password" 
               required
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all hover:bg-slate-100"
               placeholder="••••••••"
             />
           </div>
@@ -131,7 +138,7 @@ const RegisterPage = () => {
         <button 
           type="submit" 
           disabled={loading}
-          className="w-full bg-brand-green hover:bg-green-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-70 mt-2"
+          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-cyan-400/30 hover:shadow-cyan-400/50 disabled:shadow-none mt-2"
         >
           {loading ? (
              <><Loader2 size={20} className="animate-spin" /> Đang tạo tài khoản...</>
@@ -141,8 +148,8 @@ const RegisterPage = () => {
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-600">
-        Đã có tài khoản? <Link to="/login" className="text-brand-green font-medium hover:underline">Đăng nhập</Link>
+      <div className="mt-8 text-center text-sm text-slate-600">
+        Đã có tài khoản? <Link to="/login" className="text-cyan-600 font-semibold hover:text-cyan-700 transition-colors">Đăng nhập</Link>
       </div>
     </div>
   );

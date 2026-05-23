@@ -107,13 +107,43 @@ export const exportDashboardReport = async () => {
 
 export const getForumReports = async () => {
   const response = await api.get('/admin/forum/reports');
-  return response.data;
+  const data = response.data;
+
+  if (Array.isArray(data)) {
+    return {
+      reports: data,
+      totalReports: data.length,
+      pendingReports: data.length,
+      resolvedReports: 0,
+      rejectedReports: 0,
+    };
+  }
+
+  return {
+    reports: Array.isArray(data?.reports) ? data.reports : [],
+    totalReports: Number(data?.totalReports || data?.reports?.length || 0),
+    pendingReports: Number(data?.pendingReports || 0),
+    resolvedReports: Number(data?.resolvedReports || 0),
+    rejectedReports: Number(data?.rejectedReports || 0),
+    message: data?.message || '',
+  };
 };
 
-export const handleForumModeration = async (reportId, action) => {
+export const handleForumModeration = async (reportId, action, adminNote = '') => {
   const response = await api.post('/admin/forum/moderation', {
     reportId,
     action,
+    adminNote,
+  });
+
+  return response.data;
+};
+
+export const deleteReportedForumPost = async (postId, reportId) => {
+  const response = await api.delete(`/admin/forum/posts/${postId}`, {
+    params: {
+      reportId,
+    },
   });
 
   return response.data;
