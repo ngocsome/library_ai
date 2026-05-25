@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Mail,
   ArrowLeft,
   Loader2,
   AlertCircle,
-  CheckCircle2,
 } from 'lucide-react';
 import { forgotPassword } from '../../services/authService';
 
 const ForgotPasswordPage = () => {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [message, setMessage] = useState('');
-  const [resetToken, setResetToken] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,126 +28,85 @@ const ForgotPasswordPage = () => {
     try {
       setLoading(true);
       setMessage('');
-      setResetToken('');
 
       const response = await forgotPassword(trimmedEmail);
 
-      setMessage(
-        response?.message ||
-          'Nếu email tồn tại, hệ thống đã tạo yêu cầu đặt lại mật khẩu.'
-      );
+      const token =
+        response?.token ||
+        response?.resetToken ||
+        response?.ResetToken ||
+        response?.data?.token ||
+        response?.data?.resetToken ||
+        '';
 
-      if (response?.token) {
-        setResetToken(response.token);
+      if (!token) {
+        setMessage(
+          response?.message ||
+            'Không tìm thấy email trong hệ thống hoặc hệ thống chưa tạo được token đặt lại mật khẩu.'
+        );
+        return;
       }
 
-      setSent(true);
+      navigate(`/reset-password?token=${encodeURIComponent(token)}`);
     } catch (error) {
       console.error('Forgot password error:', error);
 
       setMessage(
         error.response?.data?.message ||
-          'Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại.'
+          'Email không tồn tại trong hệ thống hoặc không thể gửi yêu cầu đặt lại mật khẩu.'
       );
     } finally {
       setLoading(false);
     }
   };
 
-  if (sent) {
-    return (
-      <div className="text-center">
-        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
-          <CheckCircle2 size={34} strokeWidth={1.5} />
-        </div>
-
-        <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">
-          Kiểm tra email
-        </h2>
-
-        <p className="text-slate-600 mb-8 text-sm leading-relaxed">
-          {message ||
-            'Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn.'}
-        </p>
-
-        {resetToken && (
-          <div className="bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-4 text-sm mb-8 text-left break-all">
-            <p className="font-semibold mb-2">Token test:</p>
-
-            <p className="text-xs bg-white border border-amber-200 rounded-lg p-3 mb-3">{resetToken}</p>
-
-            <Link
-              to={`/reset-password?token=${encodeURIComponent(resetToken)}`}
-              className="inline-block text-cyan-600 font-semibold hover:text-cyan-700 transition-colors"
-            >
-              Đi tới trang đặt lại mật khẩu
-            </Link>
-          </div>
-        )}
-
-        {!resetToken && (
-          <p className="text-xs text-slate-500 mb-8">
-            Nếu không thấy email, hãy kiểm tra thư mục spam hoặc thử lại sau vài
-            phút.
-          </p>
-        )}
-
-        <Link
-          to="/login"
-          className="text-cyan-600 font-semibold hover:text-cyan-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <ArrowLeft size={16} />
-          Quay lại đăng nhập
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div>
       <Link
         to="/login"
-        className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1 mb-6 transition-colors"
+        className="group text-sm font-semibold text-slate-400 hover:text-slate-700 flex items-center gap-1.5 mb-6 transition-colors"
       >
-        <ArrowLeft size={16} />
-        Quay lại
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        <span>Quay lại</span>
       </Link>
 
-      <div className="mb-8">
-        <h2 className="text-3xl font-black text-slate-900 mb-2 text-center tracking-tight">
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent tracking-tight">
           Quên mật khẩu?
         </h2>
 
-        <p className="text-center text-slate-600 text-sm">
-          Nhập email của bạn để nhận liên kết đặt lại mật khẩu.
+        <p className="text-slate-500 text-sm mt-2">
+          Nhập email tài khoản để chuyển sang trang đặt lại mật khẩu.
         </p>
       </div>
 
       {message && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm flex items-start gap-2">
-          <AlertCircle size={18} className="mt-0.5 shrink-0" />
-          <span>{message}</span>
+        <div className="mb-6 bg-rose-50 border border-rose-100/80 text-rose-700 rounded-2xl px-4 py-3 text-sm flex items-start gap-2.5 animate-in fade-in zoom-in-95 duration-300">
+          <AlertCircle size={18} className="mt-0.5 shrink-0 text-rose-500" />
+          <span className="font-semibold">{message}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-2">
+        <div className="space-y-2">
+          <label className="block text-xs uppercase tracking-wider font-bold text-slate-500">
             Email
           </label>
 
-          <div className="relative">
-            <Mail
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 group-focus-within:scale-105 transition-all duration-300 pointer-events-none">
+              <Mail size={18} />
+            </div>
 
             <input
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all hover:bg-slate-100"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (message) setMessage('');
+              }}
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-cyan-500 rounded-2xl text-slate-900 placeholder-slate-400 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all duration-300 shadow-[inner_0_2px_4px_rgba(0,0,0,0.01)]"
               placeholder="example@gmail.com"
             />
           </div>
@@ -157,15 +115,17 @@ const ForgotPasswordPage = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-cyan-400/30 hover:shadow-cyan-400/50 disabled:shadow-none"
+          className="relative w-full group overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_8px_30px_rgb(6,182,212,0.25)] hover:shadow-[0_12px_40px_rgb(6,182,212,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
         >
+          <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+
           {loading ? (
             <>
               <Loader2 size={20} className="animate-spin" />
-              Đang gửi...
+              <span>Đang kiểm tra email...</span>
             </>
           ) : (
-            'Gửi yêu cầu'
+            'Tiếp tục'
           )}
         </button>
       </form>

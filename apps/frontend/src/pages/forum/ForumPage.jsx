@@ -9,6 +9,63 @@ import {
 } from 'lucide-react';
 import { getPosts, getForumCategories } from '../../services/forumService';
 
+const getPostId = (post) => post.PostID || post.postId || post.id || post.ID;
+
+const getPostTitle = (post) => post.Title || post.title || 'Không có tiêu đề';
+
+const getCategoryName = (post) =>
+  post.ForumCategories?.Name ||
+  post.ForumCategories?.name ||
+  post.CategoryName ||
+  post.categoryName ||
+  post.category?.name ||
+  'Chung';
+
+const getAuthorName = (post) =>
+  post.Users?.FullName ||
+  post.Users?.fullName ||
+  post.Users?.Username ||
+  post.Users?.username ||
+  post.AuthorName ||
+  post.authorName ||
+  post.author ||
+  'Ẩn danh';
+
+const getCreatedAt = (post) =>
+  post.CreatedAt || post.createdAt || post.created_at || post.CreatedDate || null;
+
+const getLikeCount = (post) =>
+  Number(
+    post.Upvotes ??
+      post.upvotes ??
+      post.LikeCount ??
+      post.likeCount ??
+      post.likesCount ??
+      post.LikesCount ??
+      0
+  );
+
+const getCommentCount = (post) => {
+  const directCount =
+    post.CommentCount ??
+    post.commentCount ??
+    post.CommentsCount ??
+    post.commentsCount ??
+    post.TotalComments ??
+    post.totalComments ??
+    post._count?.ForumComments ??
+    post._count?.comments;
+
+  if (directCount !== undefined && directCount !== null) {
+    const parsed = Number(directCount);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  const comments = post.Comments || post.comments || post.ForumComments || post.forumComments;
+
+  return Array.isArray(comments) ? comments.length : 0;
+};
+
 const ForumPage = () => {
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -31,7 +88,7 @@ const ForumPage = () => {
         setCategories(Array.isArray(catsRes) ? catsRes : []);
       } catch (error) {
         console.error('Failed to fetch forum data', error);
-        setError(error.message || 'Không thể tải dữ liệu');
+        setError(error.response?.data?.message || error.message || 'Không thể tải dữ liệu');
       } finally {
         setLoading(false);
       }
@@ -83,6 +140,7 @@ const ForumPage = () => {
 
             <div className="space-y-1">
               <button
+                type="button"
                 onClick={() => setSelectedCategory(null)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                   !selectedCategory
@@ -95,12 +153,13 @@ const ForumPage = () => {
 
               {categories.map((cat, idx) => {
                 const categoryId =
-                  cat.ForumCatID || cat.CategoryID || cat.id;
+                  cat.ForumCatID || cat.CategoryID || cat.categoryId || cat.id;
                 const categoryName =
-                  cat.Name || cat.name || cat.CategoryName || 'Chủ đề';
+                  cat.Name || cat.name || cat.CategoryName || cat.categoryName || 'Chủ đề';
 
                 return (
                   <button
+                    type="button"
                     key={categoryId || idx}
                     onClick={() => setSelectedCategory(categoryId)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -122,7 +181,7 @@ const ForumPage = () => {
             <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 text-center">
               {error}
               <br />
-              (Vui lòng thử đăng nhập lại)
+              <span className="text-xs">Vui lòng thử đăng nhập lại hoặc tải lại trang.</span>
             </div>
           )}
 
@@ -132,24 +191,13 @@ const ForumPage = () => {
             </div>
           ) : (
             posts.map((post, idx) => {
-              const postId = post.PostID || post.id;
-              const title = post.Title || post.title || 'Không có tiêu đề';
-              const categoryName =
-                post.ForumCategories?.Name ||
-                post.CategoryName ||
-                post.categoryName ||
-                'Chung';
-              const authorName =
-                post.Users?.FullName ||
-                post.AuthorName ||
-                post.authorName ||
-                'Ẩn danh';
-              const createdAt =
-                post.CreatedAt || post.createdAt || post.created_at;
-              const likeCount = post.Upvotes ?? post.LikeCount ?? post.likeCount ?? 0;
-              const comments = post.Comments || post.comments || [];
-              const commentCount =
-                post._count?.ForumComments ?? comments.length ?? 0;
+              const postId = getPostId(post);
+              const title = getPostTitle(post);
+              const categoryName = getCategoryName(post);
+              const authorName = getAuthorName(post);
+              const createdAt = getCreatedAt(post);
+              const likeCount = getLikeCount(post);
+              const commentCount = getCommentCount(post);
 
               return (
                 <Link
@@ -164,8 +212,8 @@ const ForumPage = () => {
                       </span>
                     </div>
 
-                    <div className="flex-1">
-                      <div className="flex gap-2 items-center mb-1">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex gap-2 items-center mb-1 flex-wrap">
                         <span className="text-xs px-2 py-0.5 bg-gray-100 rounded text-gray-600 font-medium">
                           {categoryName}
                         </span>
@@ -175,11 +223,11 @@ const ForumPage = () => {
                         </span>
                       </div>
 
-                      <h3 className="font-bold text-lg text-gray-800 mb-2 hover:text-brand-green transition-colors">
+                      <h3 className="font-bold text-lg text-gray-800 mb-2 hover:text-brand-green transition-colors truncate">
                         {title}
                       </h3>
 
-                      <div className="flex items-center gap-6 text-gray-500 text-sm">
+                      <div className="flex items-center gap-6 text-gray-500 text-sm flex-wrap">
                         <span className="flex items-center gap-1.5">
                           <ThumbsUp size={16} />
                           {likeCount}

@@ -27,6 +27,9 @@ public class ForumPostResponse {
     private Integer likeCount;
     private Integer LikeCount;
 
+    private Integer commentCount;
+    private Integer CommentCount;
+
     private Boolean liked;
     private Boolean Liked;
 

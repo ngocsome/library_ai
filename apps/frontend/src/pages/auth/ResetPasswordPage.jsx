@@ -88,89 +88,100 @@ const ResetPasswordPage = () => {
     }
   };
 
+  // INVALID TOKEN STATE SCREEN
   if (!token) {
     return (
       <div>
+        {/* Back Link */}
         <Link
           to="/login"
-          className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mb-6"
+          className="group text-sm font-semibold text-slate-400 hover:text-slate-700 flex items-center gap-1.5 mb-6 transition-all duration-300"
         >
-          <ArrowLeft size={16} />
-          Quay lại đăng nhập
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          <span>Quay lại đăng nhập</span>
         </Link>
 
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle size={34} />
+          {/* Error Warning Circle */}
+          <div className="w-16 h-16 bg-rose-500/5 text-rose-600 border border-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_8px_20px_rgba(244,63,94,0.12)]">
+            <AlertCircle size={32} className="animate-pulse" />
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+          <h2 className="text-3xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-3 tracking-tight">
             Link không hợp lệ
           </h2>
 
-          <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+          <p className="text-slate-500 mb-8 text-sm leading-relaxed">
             Liên kết đặt lại mật khẩu bị thiếu token hoặc không hợp lệ. Vui lòng
             gửi lại yêu cầu quên mật khẩu.
           </p>
 
+          {/* Shimmer Button Link */}
           <Link
             to="/forgot-password"
-            className="w-full bg-brand-green hover:bg-green-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            className="relative w-full group overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_8px_30px_rgb(6,182,212,0.25)] hover:shadow-[0_12px_40px_rgb(6,182,212,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
-            Gửi lại yêu cầu
+            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+            <span>Gửi lại yêu cầu</span>
           </Link>
         </div>
       </div>
     );
   }
 
+  // DEFAULT FORM STATE SCREEN
   return (
     <div>
+      {/* Top Back Link */}
       <Link
         to="/login"
-        className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mb-6"
+        className="group text-sm font-semibold text-slate-400 hover:text-slate-700 flex items-center gap-1.5 mb-6 transition-all duration-300"
       >
-        <ArrowLeft size={16} />
-        Quay lại đăng nhập
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        <span>Quay lại đăng nhập</span>
       </Link>
 
-      <h2 className="text-2xl font-semibold text-gray-800 mb-2 text-center">
-        Đặt lại mật khẩu
-      </h2>
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent tracking-tight">
+          Đặt lại mật khẩu
+        </h2>
 
-      <p className="text-center text-gray-500 mb-6 text-sm">
-        Vui lòng nhập mật khẩu mới cho tài khoản của bạn.
-      </p>
+        <p className="text-slate-500 text-sm mt-2">
+          Vui lòng nhập mật khẩu mới cho tài khoản của bạn.
+        </p>
+      </div>
 
+      {/* Cybernetic High-Tech Alert Banner (Success/Error) */}
       {message && (
         <div
-          className={`mb-4 rounded-lg px-4 py-3 text-sm flex items-start gap-2 ${
+          className={`mb-6 rounded-2xl px-4 py-3 text-sm flex items-start gap-2.5 animate-in fade-in zoom-in-95 duration-300 border ${
             success
-              ? 'bg-green-50 border border-green-200 text-green-700'
-              : 'bg-red-50 border border-red-200 text-red-600'
+              ? 'bg-emerald-50 border-emerald-100 text-emerald-700 font-semibold'
+              : 'bg-rose-50 border-rose-100 text-rose-700 font-semibold'
           }`}
         >
           {success ? (
-            <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+            <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-500 animate-pulse" />
           ) : (
-            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+            <AlertCircle size={18} className="mt-0.5 shrink-0 text-rose-500" />
           )}
 
           <span>{message}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* New Password Input Group */}
+        <div className="space-y-2">
+          <label className="block text-xs uppercase tracking-wider font-bold text-slate-500">
             Mật khẩu mới
           </label>
 
-          <div className="relative">
-            <Lock
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 group-focus-within:scale-105 transition-all duration-300 pointer-events-none">
+              <Lock size={18} />
+            </div>
 
             <input
               type={showPassword ? 'text' : 'password'}
@@ -178,14 +189,15 @@ const ResetPasswordPage = () => {
               required
               value={formData.newPassword}
               onChange={handleChange}
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all"
+              className="w-full pl-12 pr-12 py-3.5 bg-slate-50/50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-cyan-500 rounded-2xl text-slate-900 placeholder-slate-400 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all duration-300 shadow-[inner_0_2px_4px_rgba(0,0,0,0.01)]"
               placeholder="••••••••"
             />
 
+            {/* Toggle Visibility */}
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:scale-95 transition-all p-1 rounded-lg hover:bg-slate-100/80"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -193,16 +205,16 @@ const ResetPasswordPage = () => {
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Confirm Password Input Group */}
+        <div className="space-y-2">
+          <label className="block text-xs uppercase tracking-wider font-bold text-slate-500">
             Xác nhận mật khẩu mới
           </label>
 
-          <div className="relative">
-            <Lock
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 group-focus-within:scale-105 transition-all duration-300 pointer-events-none">
+              <Lock size={18} />
+            </div>
 
             <input
               type={showConfirmPassword ? 'text' : 'password'}
@@ -210,14 +222,15 @@ const ResetPasswordPage = () => {
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all"
+              className="w-full pl-12 pr-12 py-3.5 bg-slate-50/50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 focus:border-cyan-500 rounded-2xl text-slate-900 placeholder-slate-400 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all duration-300 shadow-[inner_0_2px_4px_rgba(0,0,0,0.01)]"
               placeholder="••••••••"
             />
 
+            {/* Toggle Visibility */}
             <button
               type="button"
               onClick={() => setShowConfirmPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:scale-95 transition-all p-1 rounded-lg hover:bg-slate-100/80"
               tabIndex={-1}
             >
               {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -225,15 +238,19 @@ const ResetPasswordPage = () => {
           </div>
         </div>
 
+        {/* Shimmer Sweep Submit Button */}
         <button
           type="submit"
           disabled={loading || success}
-          className="w-full bg-brand-green hover:bg-green-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
+          className="relative w-full group overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_8px_30px_rgb(6,182,212,0.25)] hover:shadow-[0_12px_40px_rgb(6,182,212,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
         >
+          {/* Holographic sweep light effect on hover */}
+          <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+          
           {loading ? (
             <>
               <Loader2 size={20} className="animate-spin" />
-              Đang lưu...
+              <span>Đang lưu mật khẩu mới...</span>
             </>
           ) : (
             'Lưu mật khẩu'

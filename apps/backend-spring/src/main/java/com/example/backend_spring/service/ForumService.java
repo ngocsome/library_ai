@@ -239,11 +239,13 @@ public class ForumService {
         Long userId = post.getUser() != null ? post.getUser().getId() : null;
         String authorName = post.getUser() != null ? post.getUser().getFullName() : "Ẩn danh";
 
+        List<ForumComment> rawComments = forumCommentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
+        int commentCount = rawComments == null ? 0 : rawComments.size();
+
         List<ForumCommentResponse> comments = List.of();
 
-        if (includeComments) {
-            comments = forumCommentRepository.findByPostIdOrderByCreatedAtAsc(post.getId())
-                    .stream()
+        if (includeComments && rawComments != null) {
+            comments = rawComments.stream()
                     .map(this::toCommentResponse)
                     .toList();
         }
@@ -263,6 +265,9 @@ public class ForumService {
 
                 .likeCount(post.getLikeCount())
                 .LikeCount(post.getLikeCount())
+
+                .commentCount(commentCount)
+                .CommentCount(commentCount)
 
                 .liked(liked)
                 .Liked(liked)
