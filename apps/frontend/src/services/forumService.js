@@ -39,6 +39,16 @@ export const unlikePost = async (postId) => {
   return response.data;
 };
 
+export const likeComment = async (commentId) => {
+  const response = await api.post(`/forum/comments/${commentId}/like`);
+  return response.data;
+};
+
+export const unlikeComment = async (commentId) => {
+  const response = await api.delete(`/forum/comments/${commentId}/like`);
+  return response.data;
+};
+
 export const reportPost = async (postId, reportData) => {
   const response = await api.post(`/forum/posts/${postId}/report`, {
     reason: reportData.reason,

@@ -26,6 +26,12 @@ public class ForumCommentResponse {
     private Long parentId;
     private Long ParentID;
 
+    private Integer likeCount;
+    private Integer LikeCount;
+
+    private Boolean liked;
+    private Boolean Liked;
+
     private LocalDateTime createdAt;
     private LocalDateTime CreatedAt;
 }

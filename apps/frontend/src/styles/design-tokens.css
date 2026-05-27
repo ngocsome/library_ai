@@ -1,28 +1,28 @@
-/* ============================================
-   DESIGN TOKENS - Light Theme (Green & Red)
-   ============================================ */
+/* ==========================================================================
+   DESIGN TOKENS - Light Theme (Green & Red Premium Edition)
+   ========================================================================== */
 
 :root {
-  /* === PRIMARY COLORS (Green) === */
-  --color-primary-50: #ecfdf5;
-  --color-primary-100: #d1fae5;
-  --color-primary-200: #a7f3d0;
-  --color-primary-300: #6ee7b7;
-  --color-primary-400: #34d399;
-  --color-primary-500: #10b981;
-  --color-primary-600: #059669; /* Main Green */
-  --color-primary-700: #047857;
-  --color-primary-800: #065f46;
-  --color-primary-900: #064e3b;
+  /* === PRIMARY COLORS (Emerald Green - Xanh lục ngọc bảo cao cấp) === */
+  --color-primary-50: #f0fdf4;
+  --color-primary-100: #dcfce7;
+  --color-primary-200: #bbf7d0;
+  --color-primary-300: #86efac;
+  --color-primary-400: #4ade80;
+  --color-primary-500: #22c55e;
+  --color-primary-600: #16a34a; /* Main Green - Tươi tắn và dịu mắt hơn */
+  --color-primary-700: #15803d;
+  --color-primary-800: #166534;
+  --color-primary-900: #14532d;
   
-  /* === ACCENT COLORS (Red) === */
+  /* === ACCENT COLORS (Vibrant Red - Đỏ hồng ngoại ngọc rực rỡ) === */
   --color-accent-50: #fef2f2;
   --color-accent-100: #fee2e2;
-  --color-accent-500: #ef4444;
-  --color-accent-600: #dc2626; /* Main Red */
-  --color-accent-700: #b91c1c;
+  --color-accent-500: #f43f5e;
+  --color-accent-600: #e11d48; /* Main Red - Tone hồng đỏ hiện đại, tránh bị chói mắt */
+  --color-accent-700: #be123c;
   
-  /* === NEUTRAL COLORS === */
+  /* === NEUTRAL COLORS (Sleek Slate Blue - Xám ánh xanh sang trọng) === */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -34,26 +34,26 @@
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
   
-  /* === GRADIENTS === */
-  --gradient-primary: linear-gradient(135deg, #059669 0%, #dc2626 100%);
-  --gradient-hero: linear-gradient(135deg, #059669 0%, #10b981 50%, #dc2626 100%);
+  /* === GRADIENTS (Tối ưu hóa tránh vùng đục màu ở giữa) === */
+  --gradient-primary: linear-gradient(135deg, #16a34a 0%, #22c55e 30%, #f43f5e 75%, #e11d48 100%);
+  --gradient-hero: linear-gradient(135deg, #15803d 0%, #22c55e 40%, #fb7185 75%, #e11d48 100%);
   
-  /* === GLASSMORPHISM (Light) === */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-hover-bg: rgba(255, 255, 255, 0.95);
-  --glass-hover-border: rgba(5, 150, 105, 0.3);
+  /* === GLASSMORPHISM (Premium Light) === */
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-hover-bg: rgba(255, 255, 255, 0.85);
+  --glass-hover-border: rgba(22, 163, 74, 0.25);
   
-  --glass-nav-bg: rgba(255, 255, 255, 0.85);
-  --glass-nav-border: rgba(0, 0, 0, 0.05);
+  --glass-nav-bg: rgba(255, 255, 255, 0.75);
+  --glass-nav-border: rgba(226, 232, 240, 0.5);
   
-  /* === SHADOWS === */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-primary: 0 0 20px -5px rgba(5, 150, 105, 0.3);
-  --shadow-accent: 0 0 20px -5px rgba(220, 38, 38, 0.3);
+  /* === SHADOWS (Layered Soft Shadows - Bóng đổ đa tầng 3D siêu mịn) === */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.03), 0 2px 8px -1px rgba(15, 23, 42, 0.02);
+  --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.02), 0 0 0 1px rgba(15, 23, 42, 0.01);
+  --shadow-xl: 0 24px 48px -8px rgba(15, 23, 42, 0.06), 0 8px 20px -4px rgba(15, 23, 42, 0.03), 0 0 0 1px rgba(15, 23, 42, 0.01);
+  --shadow-primary: 0 0 20px -4px rgba(22, 163, 74, 0.25);
+  --shadow-accent: 0 0 20px -4px rgba(225, 29, 72, 0.25);
   
   /* === SPACING === */
   --spacing-xs: 0.25rem;
@@ -71,10 +71,10 @@
   --radius-2xl: 1.5rem;
   --radius-full: 9999px;
   
-  /* === TRANSITIONS === */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* === TRANSITIONS (Đường cong chuyển động mượt mà chuẩn Apple) === */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 500ms cubic-bezier(0.16, 1, 0.3, 1);
   
   /* === BLUR === */
   --blur-sm: 4px;
@@ -83,15 +83,15 @@
   --blur-xl: 16px;
 }
 
-/* ============================================
+/* ==========================================================================
    UTILITY CLASSES
-   ============================================ */
+   ========================================================================== */
 
 /* === GLASSMORPHISM === */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
+  backdrop-filter: blur(var(--blur-lg)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--blur-lg)) saturate(140%);
   border: 1px solid var(--glass-border);
 }
 
@@ -102,31 +102,31 @@
 
 .glass-nav {
   background: var(--glass-nav-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--glass-nav-border);
   box-shadow: var(--shadow-md);
 }
 
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .glass-card:hover {
   background: var(--glass-hover-bg);
   border-color: var(--glass-hover-border);
-  transform: translateY(-5px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-xl);
 }
 
 /* === GRADIENT TEXT === */
 .gradient-text {
-  background: linear-gradient(135deg, #059669 0%, #dc2626 100%);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -135,14 +135,14 @@
 
 /* === ANIMATIONS === */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes slideUp {
   from { 
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to { 
     opacity: 1;
@@ -152,7 +152,7 @@
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 }
 
 .animate-fade-in {
@@ -164,7 +164,7 @@
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
 }
 
 /* === HOVER EFFECTS === */
@@ -173,19 +173,18 @@
 }
 
 .hover-lift:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   box-shadow: var(--shadow-xl);
 }
 
 /* === CUSTOM SCROLLBAR === */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--color-slate-100);
-  border-radius: var(--radius-full);
+  background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {

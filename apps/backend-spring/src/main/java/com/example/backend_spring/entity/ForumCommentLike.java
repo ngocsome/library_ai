@@ -6,41 +6,35 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "forum_comments")
+@Table(
+        name = "forum_comment_likes",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"comment_id", "user_id"})
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ForumComment {
+public class ForumCommentLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
-
     private LocalDateTime createdAt;
 
-    private Integer likeCount;
+    @ManyToOne
+    @JoinColumn(name = "comment_id", nullable = false)
+    private ForumComment comment;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
-    private ForumPost post;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    private Long parentId;
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
-
-        if (this.likeCount == null) {
-            this.likeCount = 0;
-        }
     }
 }

@@ -1,14 +1,20 @@
 package com.example.backend_spring.service;
 
-import com.example.backend_spring.dto.forum.*;
+import com.example.backend_spring.dto.forum.CreateCommentRequest;
+import com.example.backend_spring.dto.forum.CreatePostRequest;
+import com.example.backend_spring.dto.forum.ForumCategoryResponse;
+import com.example.backend_spring.dto.forum.ForumCommentResponse;
+import com.example.backend_spring.dto.forum.ForumPostResponse;
 import com.example.backend_spring.entity.ForumCategory;
 import com.example.backend_spring.entity.ForumComment;
+import com.example.backend_spring.entity.ForumCommentLike;
 import com.example.backend_spring.entity.ForumPost;
 import com.example.backend_spring.entity.ForumPostLike;
 import com.example.backend_spring.entity.ForumReport;
 import com.example.backend_spring.entity.User;
 import com.example.backend_spring.enums.ReportStatus;
 import com.example.backend_spring.repository.ForumCategoryRepository;
+import com.example.backend_spring.repository.ForumCommentLikeRepository;
 import com.example.backend_spring.repository.ForumCommentRepository;
 import com.example.backend_spring.repository.ForumPostLikeRepository;
 import com.example.backend_spring.repository.ForumPostRepository;
@@ -29,6 +35,7 @@ public class ForumService {
     private final ForumPostRepository forumPostRepository;
     private final ForumCommentRepository forumCommentRepository;
     private final ForumPostLikeRepository forumPostLikeRepository;
+    private final ForumCommentLikeRepository forumCommentLikeRepository;
     private final ForumReportRepository forumReportRepository;
     private final UserRepository userRepository;
 
@@ -49,7 +56,7 @@ public class ForumService {
         }
 
         return posts.stream()
-                .map(post -> toPostResponse(post, false, false))
+                .map(post -> toPostResponse(post, false, false, null))
                 .toList();
     }
 
@@ -61,19 +68,22 @@ public class ForumService {
         forumPostRepository.save(post);
 
         boolean liked = false;
+        Long currentUserId = null;
 
         if (username != null && !username.isBlank()) {
             User user = getUserByUsername(username);
+            currentUserId = user.getId();
             liked = forumPostLikeRepository.existsByPostIdAndUserId(id, user.getId());
         }
 
-        return toPostResponse(post, true, liked);
+        return toPostResponse(post, true, liked, currentUserId);
     }
 
     public ForumPostResponse createPost(CreatePostRequest request, String username) {
         User user = getUserByUsername(username);
 
         ForumCategory category = null;
+
         if (request.getCategoryId() != null) {
             category = forumCategoryRepository.findById(request.getCategoryId())
                     .orElse(null);
@@ -90,7 +100,7 @@ public class ForumService {
 
         ForumPost savedPost = forumPostRepository.save(post);
 
-        return toPostResponse(savedPost, true, false);
+        return toPostResponse(savedPost, true, false, user.getId());
     }
 
     public ForumCommentResponse addComment(Long postId, CreateCommentRequest request, String username) {
@@ -104,11 +114,12 @@ public class ForumService {
                 .parentId(request.getParentId())
                 .post(post)
                 .user(user)
+                .likeCount(0)
                 .build();
 
         ForumComment savedComment = forumCommentRepository.save(comment);
 
-        return toCommentResponse(savedComment);
+        return toCommentResponse(savedComment, user.getId());
     }
 
     public Map<String, Object> likePost(Long postId, String username) {
@@ -163,6 +174,61 @@ public class ForumService {
                 "message", "Đã bỏ thích bài viết",
                 "liked", false,
                 "likeCount", post.getLikeCount()
+        );
+    }
+
+    public Map<String, Object> likeComment(Long commentId, String username) {
+        User user = getUserByUsername(username);
+
+        ForumComment comment = forumCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bình luận"));
+
+        boolean liked = forumCommentLikeRepository.existsByCommentIdAndUserId(commentId, user.getId());
+
+        if (liked) {
+            return Map.of(
+                    "message", "Bạn đã thích bình luận này rồi",
+                    "liked", true,
+                    "likeCount", comment.getLikeCount() == null ? 0 : comment.getLikeCount()
+            );
+        }
+
+        ForumCommentLike like = ForumCommentLike.builder()
+                .comment(comment)
+                .user(user)
+                .build();
+
+        forumCommentLikeRepository.save(like);
+
+        comment.setLikeCount(comment.getLikeCount() == null ? 1 : comment.getLikeCount() + 1);
+        forumCommentRepository.save(comment);
+
+        return Map.of(
+                "message", "Đã thích bình luận",
+                "liked", true,
+                "likeCount", comment.getLikeCount()
+        );
+    }
+
+    public Map<String, Object> unlikeComment(Long commentId, String username) {
+        User user = getUserByUsername(username);
+
+        ForumComment comment = forumCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bình luận"));
+
+        ForumCommentLike like = forumCommentLikeRepository.findByCommentIdAndUserId(commentId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Bạn chưa thích bình luận này"));
+
+        forumCommentLikeRepository.delete(like);
+
+        int currentLikeCount = comment.getLikeCount() == null ? 0 : comment.getLikeCount();
+        comment.setLikeCount(Math.max(0, currentLikeCount - 1));
+        forumCommentRepository.save(comment);
+
+        return Map.of(
+                "message", "Đã bỏ thích bình luận",
+                "liked", false,
+                "likeCount", comment.getLikeCount()
         );
     }
 
@@ -223,16 +289,25 @@ public class ForumService {
         return ForumCategoryResponse.builder()
                 .id(category.getId())
                 .CategoryID(category.getId())
+
                 .name(category.getName())
                 .Name(category.getName())
+
                 .description(category.getDescription())
                 .Description(category.getDescription())
+
                 .color(category.getColor())
                 .Color(category.getColor())
+
                 .build();
     }
 
-    private ForumPostResponse toPostResponse(ForumPost post, boolean includeComments, boolean liked) {
+    private ForumPostResponse toPostResponse(
+            ForumPost post,
+            boolean includeComments,
+            boolean liked,
+            Long currentUserId
+    ) {
         Long categoryId = post.getCategory() != null ? post.getCategory().getId() : null;
         String categoryName = post.getCategory() != null ? post.getCategory().getName() : "Chung";
 
@@ -246,7 +321,7 @@ public class ForumService {
 
         if (includeComments && rawComments != null) {
             comments = rawComments.stream()
-                    .map(this::toCommentResponse)
+                    .map(comment -> toCommentResponse(comment, currentUserId))
                     .toList();
         }
 
@@ -289,26 +364,54 @@ public class ForumService {
 
                 .comments(comments)
                 .Comments(comments)
+
                 .build();
     }
 
     private ForumCommentResponse toCommentResponse(ForumComment comment) {
+        return toCommentResponse(comment, null);
+    }
+
+    private ForumCommentResponse toCommentResponse(ForumComment comment, Long currentUserId) {
         Long userId = comment.getUser() != null ? comment.getUser().getId() : null;
         String authorName = comment.getUser() != null ? comment.getUser().getFullName() : "Ẩn danh";
+
+        boolean liked = false;
+
+        if (currentUserId != null) {
+            liked = forumCommentLikeRepository.existsByCommentIdAndUserId(
+                    comment.getId(),
+                    currentUserId
+            );
+        }
+
+        Integer likeCount = comment.getLikeCount() == null ? 0 : comment.getLikeCount();
 
         return ForumCommentResponse.builder()
                 .id(comment.getId())
                 .CommentID(comment.getId())
+
                 .content(comment.getContent())
                 .Content(comment.getContent())
+
                 .userId(userId)
                 .UserID(userId)
+
                 .authorName(authorName)
                 .AuthorName(authorName)
+
                 .parentId(comment.getParentId())
                 .ParentID(comment.getParentId())
+
+                .likeCount(likeCount)
+                .LikeCount(likeCount)
+
+                .liked(liked)
+                .Liked(liked)
+
                 .createdAt(comment.getCreatedAt())
                 .CreatedAt(comment.getCreatedAt())
+
                 .build();
     }
 

@@ -6,22 +6,22 @@
 
 @layer base {
   * {
-    @apply transition-colors duration-200;
+    @apply transition-colors duration-300;
   }
   
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    @apply bg-[#f8fafc] text-slate-900 antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   
   html {
     scroll-behavior: smooth;
   }
   
-  /* Custom Scrollbar for whole page */
+  /* Custom Scrollbar tiêu chuẩn cho toàn bộ trang Web */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   
   ::-webkit-scrollbar-track {
@@ -30,7 +30,8 @@
   
   ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-full, 9999px);
+    border: 2px solid #f1f5f9;
   }
   
   ::-webkit-scrollbar-thumb:hover {
@@ -39,29 +40,83 @@
 }
 
 @layer components {
-  /* Button Variants */
+  /* ==========================================================================
+     NÂNG CẤP CLASS HIỆN TẠI (Giữ nguyên logic tên class gốc)
+     ========================================================================== */
+
+  /* Button Primary (Giữ nguyên màu thương hiệu bg-brand-green của bạn) */
   .btn-primary {
-    @apply bg-brand-green text-white px-6 py-2.5 rounded-lg font-medium;
+    @apply bg-brand-green text-white px-6 py-2.5 rounded-xl font-semibold;
     @apply hover:bg-green-700 active:scale-95;
-    @apply shadow-md hover:shadow-lg;
-    transition: all var(--transition-base);
+    @apply shadow-[0_4px_14px_rgba(5,150,105,0.2)] hover:shadow-[0_6px_20px_rgba(5,150,105,0.3)];
+    transition: all var(--transition-base, 0.2s ease-in-out);
   }
   
+  /* Button Secondary */
   .btn-secondary {
-    @apply bg-white text-gray-700 px-6 py-2.5 rounded-lg font-medium border border-gray-300;
-    @apply hover:bg-gray-50 active:scale-95;
-    transition: all var(--transition-base);
+    @apply bg-white/80 text-slate-700 px-6 py-2.5 rounded-xl font-semibold border border-slate-200/80;
+    @apply hover:bg-slate-50 hover:text-slate-900 active:scale-95;
+    @apply shadow-sm hover:shadow-md;
+    backdrop-filter: blur(8px);
+    transition: all var(--transition-base, 0.2s ease-in-out);
   }
   
-  /* Input Styles */
+  /* Input Modern */
   .input-modern {
-    @apply w-full px-4 py-3 rounded-lg border border-gray-300;
-    @apply focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent;
-    @apply transition-all duration-200;
-    @apply bg-white;
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200/80;
+    @apply focus:outline-none focus:ring-4 focus:ring-brand-green/10 focus:border-brand-green;
+    @apply transition-all duration-300;
+    @apply bg-white/90;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
   }
   
   .input-modern:focus {
-    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12), 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  /* ==========================================================================
+     BỔ SUNG CÁC LỚP MODERN GLASSMORPHISM & UTILITIES
+     ========================================================================== */
+
+  /* Định nghĩa lớp Kính mờ siêu cấp (được gọi trong MainLayout của bạn) */
+  .glass-nav {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02);
+  }
+
+  /* Lớp Thẻ kính mờ cao cấp (Glassmorphic Card) */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px) saturate(125%);
+    -webkit-backdrop-filter: blur(20px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.03);
+  }
+
+  /* Thanh cuộn siêu mịn ẩn hiện cho Sidebar Admin */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: var(--radius-full, 9999px);
+  }
+  
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+  }
+
+  /* Utility tạo chữ Gradient công nghệ cực đẹp */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-fuchsia-500 to-indigo-600;
   }
 }

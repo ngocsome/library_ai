@@ -96,6 +96,32 @@ public class ForumController {
         }
     }
 
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<?> likeComment(
+            @PathVariable Long commentId,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(forumService.likeComment(commentId, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/comments/{commentId}/like")
+    public ResponseEntity<?> unlikeComment(
+            @PathVariable Long commentId,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(forumService.unlikeComment(commentId, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @PostMapping("/posts/{postId}/report")
     public ResponseEntity<?> reportPost(
             @PathVariable Long postId,
