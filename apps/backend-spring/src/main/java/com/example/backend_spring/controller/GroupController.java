@@ -21,8 +21,9 @@ public class GroupController {
     private final JwtService jwtService;
 
     @GetMapping
-    public ResponseEntity<?> getGroups() {
-        return ResponseEntity.ok(groupService.getGroups());
+    public ResponseEntity<?> getGroups(HttpServletRequest httpServletRequest) {
+        String username = getOptionalUsernameFromRequest(httpServletRequest);
+        return ResponseEntity.ok(groupService.getGroups(username));
     }
 
     @PostMapping
@@ -51,9 +52,31 @@ public class GroupController {
         }
     }
 
+    @DeleteMapping("/{id}/leave")
+    public ResponseEntity<?> leaveGroup(
+            @PathVariable Long id,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.leaveGroup(id, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}/chats")
-    public ResponseEntity<?> getChats(@PathVariable Long id) {
-        return ResponseEntity.ok(groupService.getChats(id));
+    public ResponseEntity<?> getChats(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "general") String channel,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.getChats(id, channel, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/chats")
@@ -70,11 +93,63 @@ public class GroupController {
         }
     }
 
+    @GetMapping("/{id}/join-requests")
+    public ResponseEntity<?> getJoinRequests(
+            @PathVariable Long id,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.getJoinRequests(id, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{groupId}/join-requests/{memberId}/approve")
+    public ResponseEntity<?> approveJoinRequest(
+            @PathVariable Long groupId,
+            @PathVariable Long memberId,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.approveJoinRequest(groupId, memberId, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{groupId}/join-requests/{memberId}/reject")
+    public ResponseEntity<?> rejectJoinRequest(
+            @PathVariable Long groupId,
+            @PathVariable Long memberId,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.rejectJoinRequest(groupId, memberId, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     private String getUsernameFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Thiếu token đăng nhập");
+        }
+
+        String token = authHeader.substring(7);
+        return jwtService.extractUsername(token);
+    }
+
+    private String getOptionalUsernameFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
         }
 
         String token = authHeader.substring(7);

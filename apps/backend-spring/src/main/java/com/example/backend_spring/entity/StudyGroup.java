@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 @Builder
 public class StudyGroup {
 
+    public static final String VISIBILITY_PUBLIC = "PUBLIC";
+    public static final String VISIBILITY_PRIVATE = "PRIVATE";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,6 +28,9 @@ public class StudyGroup {
     private String description;
 
     private String subject;
+
+    @Column(nullable = false, length = 20)
+    private String visibility;
 
     private Integer memberCount;
 
@@ -40,6 +46,11 @@ public class StudyGroup {
             this.memberCount = 1;
         }
 
+        if (this.visibility == null || this.visibility.isBlank()) {
+            this.visibility = VISIBILITY_PUBLIC;
+        }
+
+        this.visibility = this.visibility.trim().toUpperCase();
         this.createdAt = LocalDateTime.now();
     }
 }

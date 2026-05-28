@@ -127,7 +127,7 @@ const ForumPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 pt-32 pb-20 space-y-8 relative overflow-hidden max-w-6xl">
+    <div className="container mx-auto px-6 pt-15 pb-20 space-y-8 relative overflow-hidden max-w-6xl">
       
       {/* Background Ambient Glows */}
       <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-gradient-to-br from-emerald-250/15 to-transparent rounded-full filter blur-[120px] pointer-events-none z-0" />

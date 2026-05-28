@@ -19,11 +19,18 @@ import java.time.LocalDateTime;
 @Builder
 public class GroupMember {
 
+    public static final String STATUS_PENDING = "PENDING";
+    public static final String STATUS_APPROVED = "APPROVED";
+    public static final String STATUS_REJECTED = "REJECTED";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private LocalDateTime joinedAt;
+
+    @Column(nullable = false, length = 20)
+    private String status;
 
     @ManyToOne
     @JoinColumn(name = "group_id")
@@ -36,5 +43,11 @@ public class GroupMember {
     @PrePersist
     public void prePersist() {
         this.joinedAt = LocalDateTime.now();
+
+        if (this.status == null || this.status.isBlank()) {
+            this.status = STATUS_APPROVED;
+        }
+
+        this.status = this.status.trim().toUpperCase();
     }
 }

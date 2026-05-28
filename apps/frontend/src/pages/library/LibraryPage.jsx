@@ -126,50 +126,46 @@ const LibraryPage = () => {
         value: documents.length,
         suffix: '+',
         label: 'Tài liệu',
-        color: 'text-emerald-500 bg-emerald-500/10'
+        color: 'text-emerald-500 bg-emerald-500/10',
       },
       {
         icon: Eye,
         value: totalViews,
         suffix: '',
         label: 'Lượt xem',
-        color: 'text-blue-500 bg-blue-500/10'
+        color: 'text-blue-500 bg-blue-500/10',
       },
       {
         icon: Layers,
         value: categories.length,
         suffix: '+',
         label: 'Danh mục',
-        color: 'text-purple-500 bg-purple-500/10'
+        color: 'text-purple-500 bg-purple-500/10',
       },
       {
         icon: Grid,
         value: fileTypeCount,
         suffix: '+',
         label: 'Loại file',
-        color: 'text-amber-500 bg-amber-500/10'
+        color: 'text-amber-500 bg-amber-500/10',
       },
     ];
   }, [documents, categories]);
 
   return (
     <div className="min-h-screen relative bg-[#f8fafc] overflow-hidden">
-      
-      {/* Background Ambient Glows & Cyber Lưới Chấm Điện Tử chìm */}
       <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-emerald-250/20 to-transparent rounded-full filter blur-[120px] pointer-events-none z-0" />
       <div className="absolute top-[30%] right-0 w-[500px] h-[500px] bg-gradient-to-tr from-rose-200/10 to-transparent rounded-full filter blur-[100px] pointer-events-none z-0" />
       <div
         className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none z-0"
         style={{
           backgroundImage: `radial-gradient(circle, #000 8%, transparent 9%)`,
-          backgroundSize: '24px 24px'
+          backgroundSize: '24px 24px',
         }}
       />
 
-      {/* Header / Hero Section */}
-      <header className="relative pt-32 pb-16 px-6 overflow-hidden z-10">
+      <header className="relative pt-[15px] pb-16 px-6 overflow-hidden z-10">
         <div className="container mx-auto relative text-center max-w-4xl">
-          {/* Cyber Badge */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -179,7 +175,6 @@ const LibraryPage = () => {
             THƯ VIỆN SỐ THẾ HỆ MỚI AI 2.0
           </motion.div>
 
-          {/* Heading */}
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -187,10 +182,11 @@ const LibraryPage = () => {
             className="text-4xl md:text-6xl font-black mb-6 leading-[1.15] text-slate-800 tracking-tight"
           >
             Kết Nối Tri Thức <br />
-            <span className="gradient-text font-black tracking-normal">Không Giới Hạn</span>
+            <span className="gradient-text font-black tracking-normal">
+              Không Giới Hạn
+            </span>
           </motion.h1>
 
-          {/* Subheading */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -200,7 +196,6 @@ const LibraryPage = () => {
             Khám phá kho tài liệu số, giáo trình và tài liệu học tập được phân loại thông minh. Tìm kiếm nhanh, lưu yêu thích và tải xuống dễ dàng phục vụ quá trình nghiên cứu của bạn.
           </motion.p>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
             <motion.button
               type="button"
@@ -223,7 +218,6 @@ const LibraryPage = () => {
             </motion.button>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
             {libraryStats.map((stat, idx) => (
               <motion.div
@@ -233,7 +227,9 @@ const LibraryPage = () => {
                 transition={{ delay: 0.3 + idx * 0.08 }}
                 className="flex items-center space-x-3.5 bg-white/90 backdrop-blur-md rounded-2xl px-4 py-3.5 border border-slate-200/50 shadow-[0_4px_20px_rgba(15,23,42,0.02)] hover:shadow-md transition-all group"
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.color} group-hover:scale-105 transition-transform`}>
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.color} group-hover:scale-105 transition-transform`}
+                >
                   <stat.icon size={18} />
                 </div>
 
@@ -252,10 +248,7 @@ const LibraryPage = () => {
         </div>
       </header>
 
-      {/* Main Container */}
       <main className="container mx-auto px-6 py-12 space-y-20 relative z-10">
-        
-        {/* Section 1: Categories */}
         <section>
           <div className="flex justify-between items-end mb-6">
             <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -322,17 +315,16 @@ const LibraryPage = () => {
                     {categoryName}
                   </h3>
 
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-brand-green transition-colors">Khám phá</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-brand-green transition-colors">
+                    Khám phá
+                  </span>
                 </motion.div>
               );
             })}
           </div>
         </section>
 
-        {/* Section 2: Documents list & Sidebar */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Main Document Grid Area */}
           <div className="lg:col-span-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 border-b border-slate-200/60 pb-4">
               <div>
@@ -351,7 +343,6 @@ const LibraryPage = () => {
                 )}
               </div>
 
-              {/* Search Bar Input */}
               <div className="relative w-full md:w-72 group">
                 <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400 group-focus-within:text-brand-green transition-colors" />
 
@@ -421,10 +412,7 @@ const LibraryPage = () => {
             )}
           </div>
 
-          {/* Sidebar Area */}
           <div className="lg:col-span-4 space-y-6">
-            
-            {/* Trending Section */}
             <div className="bg-white rounded-3xl p-6 border border-slate-200/60 shadow-[0_8px_30px_rgba(15,23,42,0.02)]">
               <h3 className="text-sm font-black mb-6 uppercase tracking-wider flex items-center gap-2 text-slate-800">
                 <Clock className="w-4.5 h-4.5 text-brand-green animate-pulse" />
@@ -444,7 +432,6 @@ const LibraryPage = () => {
                       key={documentId || idx}
                       className="flex items-center gap-4 group cursor-pointer border-b border-slate-100 last:border-0 pb-3 last:pb-0 relative overflow-hidden"
                     >
-                      {/* Số thứ tự Typography lớn in chìm nghệ thuật */}
                       <div className="font-black text-2xl text-slate-200/80 group-hover:text-emerald-500 transition-colors shrink-0 font-mono">
                         0{idx + 1}
                       </div>
@@ -469,17 +456,14 @@ const LibraryPage = () => {
               </div>
             </div>
 
-            {/* Premium Membership Banner (Hologram AI style) */}
             <div className="relative rounded-3xl overflow-hidden p-6 text-center shadow-lg group border border-slate-800/40">
-              {/* Premium Gradient tối đa sắc huyền ảo */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#0c1612] via-[#0f172a] to-[#1e111a] backdrop-blur-[2px]"></div>
-              
-              {/* Mạch lưới Cyber chìm */}
-              <div 
+
+              <div
                 className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none"
                 style={{
                   backgroundImage: `radial-gradient(circle, #fff 8%, transparent 9%)`,
-                  backgroundSize: '12px 12px'
+                  backgroundSize: '12px 12px',
                 }}
               />
 
@@ -505,7 +489,6 @@ const LibraryPage = () => {
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="py-12 border-t border-slate-200/60">
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -551,7 +534,6 @@ const LibraryPage = () => {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="bg-white border-t border-slate-200/60 py-12 px-6">
         <div className="container mx-auto grid md:grid-cols-4 gap-8">
           <div>
@@ -572,7 +554,9 @@ const LibraryPage = () => {
           </div>
 
           <div>
-            <h4 className="font-extrabold text-xs uppercase tracking-widest mb-4 text-slate-800">Khám phá</h4>
+            <h4 className="font-extrabold text-xs uppercase tracking-widest mb-4 text-slate-800">
+              Khám phá
+            </h4>
 
             <ul className="space-y-2 text-xs font-semibold text-slate-450">
               <li>
@@ -594,7 +578,9 @@ const LibraryPage = () => {
           </div>
 
           <div>
-            <h4 className="font-extrabold text-xs uppercase tracking-widest mb-4 text-slate-800">Hỗ trợ</h4>
+            <h4 className="font-extrabold text-xs uppercase tracking-widest mb-4 text-slate-800">
+              Hỗ trợ
+            </h4>
 
             <ul className="space-y-2 text-xs font-semibold text-slate-450">
               <li>
@@ -616,7 +602,9 @@ const LibraryPage = () => {
           </div>
 
           <div>
-            <h4 className="font-extrabold text-xs uppercase tracking-widest mb-4 text-slate-800">Đăng ký nhận bản tin</h4>
+            <h4 className="font-extrabold text-xs uppercase tracking-widest mb-4 text-slate-800">
+              Đăng ký nhận bản tin
+            </h4>
 
             <div className="flex gap-2">
               <input
@@ -685,22 +673,19 @@ const DocumentCard = ({ doc, index }) => {
         to={`/library/${documentId}`}
         className="rounded-2xl p-2.5 flex flex-col group cursor-pointer relative overflow-hidden bg-white border border-slate-200/50 hover:border-slate-250 hover:shadow-lg transition-all duration-300 block"
       >
-        {/* Nhãn loại file kính mờ nổi bật góc bìa */}
         <div className="absolute top-4 right-4 z-10 bg-slate-900/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-black uppercase text-white tracking-widest">
           {fileType}
         </div>
 
-        {/* Cyber Bìa Sách Holographic Công Nghệ 3D */}
-        <div className="relative aspect-[3/4.2] w-full overflow-hidden rounded-xl mb-3 shadow-[0_4px_10px_rgba(0,0,0,0.03)] bg-gradient-to-br from-slate-950 to-slate-900 relative">
-          {/* Mạch Grid in chìm */}
-          <div 
+        <div className="relative aspect-[3/4.2] w-full overflow-hidden rounded-xl mb-3 shadow-[0_4px_10px_rgba(0,0,0,0.03)] bg-gradient-to-br from-slate-950 to-slate-900">
+          <div
             className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none"
             style={{
               backgroundImage: `radial-gradient(circle, #fff 10%, transparent 11%)`,
-              backgroundSize: '14px 14px'
+              backgroundSize: '14px 14px',
             }}
           />
-          {/* Đốm sáng phản quang neon ở tâm bìa */}
+
           <div className="absolute inset-0 bg-gradient-to-tr from-brand-green/20 via-transparent to-rose-500/10 pointer-events-none" />
 
           <div className="absolute inset-0 flex items-center justify-center">
@@ -708,17 +693,14 @@ const DocumentCard = ({ doc, index }) => {
           </div>
         </div>
 
-        {/* Book Title */}
         <h3 className="text-slate-800 font-extrabold text-xs leading-snug mb-1 truncate group-hover:text-brand-green transition-colors">
           {title}
         </h3>
 
-        {/* Book Author */}
         <p className="text-slate-400 text-[10px] mb-2 font-bold uppercase tracking-wider truncate">
           {author}
         </p>
 
-        {/* Footer Card */}
         <div className="mt-auto flex items-center justify-between text-[11px] font-bold text-slate-500 border-t border-slate-50 pt-2">
           <div className="flex items-center text-amber-500 font-bold">
             <Star className="w-3.5 h-3.5 fill-current mr-1" />

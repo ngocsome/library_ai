@@ -14,4 +14,6 @@ public class CreateGroupRequest {
     private String description;
 
     private String subject;
+
+    private String visibility;
 }

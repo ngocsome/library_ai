@@ -10,4 +10,6 @@ public class SendMessageRequest {
 
     @NotBlank(message = "Nội dung tin nhắn không được để trống")
     private String content;
+
+    private String channel;
 }

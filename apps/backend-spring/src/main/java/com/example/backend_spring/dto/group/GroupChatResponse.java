@@ -17,6 +17,9 @@ public class GroupChatResponse {
     private String content;
     private String Content;
 
+    private String channel;
+    private String Channel;
+
     private Long groupId;
     private Long GroupID;
 

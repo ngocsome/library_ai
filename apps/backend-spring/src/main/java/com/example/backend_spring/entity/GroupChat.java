@@ -21,6 +21,9 @@ public class GroupChat {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    private String channel;
+
     private LocalDateTime createdAt;
 
     @ManyToOne
@@ -34,5 +37,9 @@ public class GroupChat {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+
+        if (this.channel == null || this.channel.isBlank()) {
+            this.channel = "general";
+        }
     }
 }

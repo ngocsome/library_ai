@@ -3,13 +3,17 @@ package com.example.backend_spring.service;
 import com.example.backend_spring.dto.notification.NotificationResponse;
 import com.example.backend_spring.entity.Notification;
 import com.example.backend_spring.entity.User;
+import com.example.backend_spring.enums.Role;
 import com.example.backend_spring.repository.NotificationRepository;
 import com.example.backend_spring.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +73,62 @@ public class NotificationService {
         notificationRepository.delete(notification);
 
         return Map.of("message", "Đã xóa thông báo");
+    }
+
+    public NotificationResponse createNotification(
+            User user,
+            String title,
+            String message,
+            String type
+    ) {
+        if (user == null) {
+            throw new RuntimeException("Không tìm thấy người nhận thông báo");
+        }
+
+        Notification notification = Notification.builder()
+                .user(user)
+                .title(title)
+                .message(message)
+                .type(type)
+                .readStatus(false)
+                .build();
+
+        Notification saved = notificationRepository.save(notification);
+
+        return toResponse(saved);
+    }
+
+    public List<NotificationResponse> createNotificationForAdminsAndOwner(
+            User owner,
+            String title,
+            String message,
+            String type
+    ) {
+        List<User> recipients = new ArrayList<>();
+
+        if (owner != null) {
+            recipients.add(owner);
+        }
+
+        List<User> admins = userRepository.findByRole(Role.ADMIN);
+        recipients.addAll(admins);
+
+        Set<Long> sentUserIds = new HashSet<>();
+        List<NotificationResponse> responses = new ArrayList<>();
+
+        for (User recipient : recipients) {
+            if (recipient == null || recipient.getId() == null) {
+                continue;
+            }
+
+            if (!sentUserIds.add(recipient.getId())) {
+                continue;
+            }
+
+            responses.add(createNotification(recipient, title, message, type));
+        }
+
+        return responses;
     }
 
     private User getUserByUsername(String username) {

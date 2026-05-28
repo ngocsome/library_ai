@@ -23,6 +23,9 @@ public class GroupResponse {
     private String subject;
     private String Subject;
 
+    private String visibility;
+    private String Visibility;
+
     private Integer memberCount;
     private Integer MemberCount;
 
@@ -31,6 +34,15 @@ public class GroupResponse {
 
     private String createdByName;
     private String CreatedByName;
+
+    private Boolean joined;
+    private Boolean Joined;
+
+    private String joinStatus;
+    private String JoinStatus;
+
+    private Boolean owner;
+    private Boolean Owner;
 
     private LocalDateTime createdAt;
     private LocalDateTime CreatedAt;
