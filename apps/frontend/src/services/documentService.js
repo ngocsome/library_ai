@@ -15,6 +15,21 @@ export const getCategories = async () => {
   return response.data;
 };
 
+export const createCategory = async (payload) => {
+  const response = await api.post('/categories', payload);
+  return response.data;
+};
+
+export const updateCategory = async (categoryId, payload) => {
+  const response = await api.put(`/categories/${categoryId}`, payload);
+  return response.data;
+};
+
+export const deleteCategory = async (categoryId) => {
+  const response = await api.delete(`/categories/${categoryId}`);
+  return response.data;
+};
+
 export const getFavorites = async () => {
   const response = await api.get('/documents/favorites');
   return response.data;

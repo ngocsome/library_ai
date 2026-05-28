@@ -26,6 +26,16 @@ export const createGroup = async (data) => {
   return response.data;
 };
 
+export const updateGroup = async (id, data) => {
+  const response = await api.put(`/groups/${id}`, data);
+  return response.data;
+};
+
+export const deleteGroup = async (id) => {
+  const response = await api.delete(`/groups/${id}`);
+  return response.data;
+};
+
 export const joinGroup = async (id) => {
   const response = await api.post(`/groups/${id}/join`);
   return response.data;

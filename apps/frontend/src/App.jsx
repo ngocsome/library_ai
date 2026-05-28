@@ -37,6 +37,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminDocuments from './pages/admin/AdminDocuments';
 import AdminForum from './pages/admin/AdminForum';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminGroups from './pages/admin/AdminGroups';
 
 // System pages
 import NotificationsPage from './pages/system/NotificationsPage';
@@ -48,7 +50,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth routes: KHÔNG được đặt trong AdminLayout */}
+        {/* Auth routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -87,6 +89,8 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/documents" element={<AdminDocuments />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/groups" element={<AdminGroups />} />
             <Route path="/admin/forum" element={<AdminForum />} />
           </Route>
         </Route>

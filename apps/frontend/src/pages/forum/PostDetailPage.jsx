@@ -50,13 +50,13 @@ const ReportModal = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] bg-slate-950/40 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 30 }}
           transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-          className="w-full max-w-lg bg-white rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200/60 overflow-hidden"
+          className="w-full max-w-lg bg-white rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200/60 overflow-hidden pointer-events-auto"
         >
           <div className="p-6 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
             <div className="flex items-center gap-3.5">
@@ -464,7 +464,7 @@ const PostDetailPage = () => {
 
   if (error) {
     return (
-      <div className="max-w-xl mx-auto p-8 text-center bg-white rounded-3xl border border-slate-200/60 shadow-sm mt-12">
+      <div className="max-w-xl mx-auto p-8 text-center bg-white rounded-3xl border border-slate-200/60 shadow-sm mt-8">
         <div className="text-red-500 font-extrabold text-sm mb-2">
           Đã xảy ra sự cố
         </div>
@@ -483,7 +483,7 @@ const PostDetailPage = () => {
 
   if (!post) {
     return (
-      <div className="max-w-xl mx-auto p-12 text-center text-slate-550 font-bold bg-white rounded-3xl border border-slate-200/60 shadow-sm mt-12">
+      <div className="max-w-xl mx-auto p-12 text-center text-slate-550 font-bold bg-white rounded-3xl border border-slate-200/60 shadow-sm mt-8">
         Bài thảo luận không tồn tại hoặc đã bị gỡ bỏ.
       </div>
     );
@@ -514,7 +514,7 @@ const PostDetailPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto pt-32 pb-20 space-y-8 px-4 sm:px-6 relative overflow-hidden">
+    <div className="max-w-4xl mx-auto pt-8 pb-20 space-y-8 px-4 sm:px-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-gradient-to-br from-emerald-250/15 to-transparent rounded-full filter blur-[120px] pointer-events-none z-0" />
       <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-200/10 to-transparent rounded-full filter blur-[140px] pointer-events-none z-0" />
 

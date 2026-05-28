@@ -10,4 +10,6 @@ public interface GroupChatRepository extends JpaRepository<GroupChat, Long> {
     List<GroupChat> findByGroupIdOrderByCreatedAtAsc(Long groupId);
 
     List<GroupChat> findByGroupIdAndChannelOrderByCreatedAtAsc(Long groupId, String channel);
+
+    void deleteByGroupId(Long groupId);
 }

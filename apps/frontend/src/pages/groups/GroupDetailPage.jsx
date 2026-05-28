@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -166,6 +166,10 @@ const GroupDetailPage = () => {
     return channels.find((channel) => channel.id === channelId)?.icon || Hash;
   };
 
+  const getAccessDeniedMessage = () => {
+    return 'Bạn cần tham gia trước khi xem nội dung nhóm';
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -191,13 +195,8 @@ const GroupDetailPage = () => {
     } catch (error) {
       console.error('Failed to load chats', error);
 
-      const message =
-        error.response?.data?.message ||
-        error.message ||
-        'Không thể tải tin nhắn nhóm';
-
       setMessages([]);
-      setLockedMessage(message);
+      setLockedMessage(getAccessDeniedMessage());
     } finally {
       setLoading(false);
     }
@@ -258,7 +257,7 @@ const GroupDetailPage = () => {
     if (!content) return;
 
     if (lockedMessage || !isApprovedMember()) {
-      alert('Bạn cần được duyệt để gửi tin nhắn trong nhóm');
+      alert('Bạn cần tham gia trước khi gửi tin nhắn trong nhóm');
       return;
     }
 

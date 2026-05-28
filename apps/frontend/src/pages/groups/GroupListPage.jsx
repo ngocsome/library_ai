@@ -99,22 +99,22 @@ const CreateGroupModal = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.96, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          exit={{ opacity: 0, scale: 0.96, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+          className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 pointer-events-auto"
         >
-          <div className="p-8 border-b border-slate-100 bg-gradient-to-br from-slate-50 to-slate-100/50 flex items-start justify-between gap-4">
-            <div className="flex items-start gap-4 flex-1">
-              <div className="w-14 h-14 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                <Users size={24} />
+          <div className="px-7 py-5 border-b border-slate-100 bg-gradient-to-br from-slate-50 to-slate-100/50 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Users size={22} />
               </div>
 
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                   Tạo nhóm học tập
                 </h2>
                 <p className="text-sm text-slate-600 mt-1 font-medium">
@@ -127,137 +127,161 @@ const CreateGroupModal = ({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 disabled:opacity-50 transition-colors flex-shrink-0"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200 disabled:opacity-50 transition-colors flex-shrink-0"
             >
               <X size={20} />
             </button>
           </div>
 
-          <form onSubmit={onSubmit} className="p-8 space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-3">
-                Tên nhóm <span className="text-red-500 font-bold">*</span>
-              </label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={onChange}
-                required
-                placeholder="Ví dụ: Nhóm ôn tập Java Spring Boot"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium outline-none transition-all focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 placeholder:text-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-3">
-                Chủ đề
-              </label>
-              <input
-                name="subject"
-                value={form.subject}
-                onChange={onChange}
-                placeholder="Ví dụ: Lập trình Java, Cơ sở dữ liệu, Ngoại ngữ..."
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium outline-none transition-all focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 placeholder:text-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-3">
-                Loại nhóm
-              </label>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label
-                  className={`cursor-pointer rounded-xl border p-4 transition-all ${
-                    form.visibility === 'PUBLIC'
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                      : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
+          <form onSubmit={onSubmit} className="p-7">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2.5">
+                    Tên nhóm <span className="text-red-500 font-bold">*</span>
+                  </label>
                   <input
-                    type="radio"
-                    name="visibility"
-                    value="PUBLIC"
-                    checked={form.visibility === 'PUBLIC'}
+                    name="name"
+                    value={form.name}
                     onChange={onChange}
-                    className="sr-only"
+                    required
+                    placeholder="Ví dụ: Nhóm ôn tập Java Spring Boot"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none transition-all focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 placeholder:text-slate-400"
                   />
-                  <div className="flex items-center gap-2 font-bold text-sm">
-                    <Globe2 size={17} />
-                    Công khai
-                  </div>
-                  <p className="text-xs mt-1 opacity-80">
-                    Ai cũng có thể tham gia ngay.
-                  </p>
-                </label>
+                </div>
 
-                <label
-                  className={`cursor-pointer rounded-xl border p-4 transition-all ${
-                    form.visibility === 'PRIVATE'
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                      : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2.5">
+                    Chủ đề
+                  </label>
                   <input
-                    type="radio"
-                    name="visibility"
-                    value="PRIVATE"
-                    checked={form.visibility === 'PRIVATE'}
+                    name="subject"
+                    value={form.subject}
                     onChange={onChange}
-                    className="sr-only"
+                    placeholder="Ví dụ: Lập trình Java, Cơ sở dữ liệu, Ngoại ngữ..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none transition-all focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 placeholder:text-slate-400"
                   />
-                  <div className="flex items-center gap-2 font-bold text-sm">
-                    <Lock size={17} />
-                    Riêng tư
-                  </div>
-                  <p className="text-xs mt-1 opacity-80">
-                    Cần chủ nhóm/admin duyệt.
-                  </p>
-                </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2.5">
+                    Mô tả nhóm
+                  </label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={onChange}
+                    rows={7}
+                    placeholder="Mô tả mục đích và nội dung của nhóm..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none transition-all focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 placeholder:text-slate-400 resize-none"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-3">
-                Mô tả nhóm
-              </label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={onChange}
-                rows={4}
-                placeholder="Mô tả mục đích và nội dung của nhóm..."
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium outline-none transition-all focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 placeholder:text-slate-400 resize-none"
-              />
-            </div>
+              <div className="flex flex-col">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2.5">
+                    Loại nhóm
+                  </label>
 
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={submitting}
-                className="flex-1 py-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition-colors disabled:opacity-50"
-              >
-                Hủy
-              </button>
+                  <div className="grid grid-cols-1 gap-4">
+                    <label
+                      className={`cursor-pointer rounded-2xl border p-5 transition-all ${
+                        form.visibility === 'PUBLIC'
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
+                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="visibility"
+                        value="PUBLIC"
+                        checked={form.visibility === 'PUBLIC'}
+                        onChange={onChange}
+                        className="sr-only"
+                      />
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/80 border border-current/10 flex items-center justify-center shrink-0">
+                          <Globe2 size={19} />
+                        </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="flex-[2] py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-semibold shadow-lg transition-all disabled:bg-emerald-300 flex items-center justify-center gap-2"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    <span>Đang tạo...</span>
-                  </>
-                ) : (
-                  <>
-                    <PlusCircle size={18} />
-                    <span>Tạo nhóm</span>
-                  </>
-                )}
-              </button>
+                        <div>
+                          <div className="font-bold text-sm">Công khai</div>
+                          <p className="text-xs mt-1 opacity-80 leading-relaxed">
+                            Ai cũng có thể tham gia ngay. Phù hợp với nhóm học mở, nhóm chia sẻ tài liệu hoặc trao đổi chung.
+                          </p>
+                        </div>
+                      </div>
+                    </label>
+
+                    <label
+                      className={`cursor-pointer rounded-2xl border p-5 transition-all ${
+                        form.visibility === 'PRIVATE'
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
+                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="visibility"
+                        value="PRIVATE"
+                        checked={form.visibility === 'PRIVATE'}
+                        onChange={onChange}
+                        className="sr-only"
+                      />
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/80 border border-current/10 flex items-center justify-center shrink-0">
+                          <Lock size={19} />
+                        </div>
+
+                        <div>
+                          <div className="font-bold text-sm">Riêng tư</div>
+                          <p className="text-xs mt-1 opacity-80 leading-relaxed">
+                            Người dùng cần gửi yêu cầu tham gia và chờ chủ nhóm hoặc admin duyệt trước khi xem nội dung nhóm.
+                          </p>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mt-auto pt-7">
+                  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 mb-4">
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      Sau khi tạo nhóm, bạn sẽ là chủ nhóm và có thể quản lý yêu cầu tham gia, trao đổi trong các kênh thảo luận.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      disabled={submitting}
+                      className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition-colors disabled:opacity-50"
+                    >
+                      Hủy
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-[2] py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-semibold shadow-lg transition-all disabled:bg-emerald-300 flex items-center justify-center gap-2"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Đang tạo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <PlusCircle size={18} />
+                          <span>Tạo nhóm</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </form>
         </motion.div>
@@ -414,7 +438,7 @@ const GroupListPage = () => {
       return;
     }
 
-    toast('Bạn cần được duyệt trước khi xem nội dung nhóm');
+    toast('Bạn cần tham gia trước khi xem nội dung nhóm');
   };
 
   const filteredGroups = groups.filter((group) => {

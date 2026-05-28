@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen,
   Eye,
@@ -33,12 +33,36 @@ const getViewCount = (doc) =>
 const getFileType = (doc) =>
   String(doc.FileType || doc.fileType || doc.type || doc.Type || 'file').toLowerCase();
 
+const getCategoryId = (cat) =>
+  cat?.CategoryID || cat?.categoryId || cat?.id || cat?.CategoryId;
+
+const getCategoryName = (cat) =>
+  cat?.Name || cat?.CategoryName || cat?.name || cat?.categoryName || 'Chủ đề';
+
+const getCategoryIcon = (categoryName) => {
+  const iconMap = {
+    'Công nghệ thông tin': Cpu,
+    'Kinh tế': Grid,
+    'Kinh tế & Quản trị': Grid,
+    'Luật học': Layers,
+    'Kỹ thuật & Công nghệ': Cpu,
+    'Ngoại ngữ': BookOpen,
+    'Ngôn ngữ & Văn hóa': BookOpen,
+    'Y học & Sức khỏe': Star,
+    'Khoa học cơ bản': Layers,
+    'Kỹ năng mềm': User,
+  };
+
+  return iconMap[categoryName] || Grid;
+};
+
 const LibraryPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [documents, setDocuments] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const searchTerm = searchParams.get('search') || '';
@@ -152,6 +176,20 @@ const LibraryPage = () => {
     ];
   }, [documents, categories]);
 
+  const visibleCategories = useMemo(() => {
+    return categories.slice(0, 4);
+  }, [categories]);
+
+  const handleSelectCategory = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setShowAllCategories(false);
+  };
+
+  const handleClearCategory = () => {
+    setSelectedCategory(null);
+    setShowAllCategories(false);
+  };
+
   return (
     <div className="min-h-screen relative bg-[#f8fafc] overflow-hidden">
       <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-emerald-250/20 to-transparent rounded-full filter blur-[120px] pointer-events-none z-0" />
@@ -258,34 +296,19 @@ const LibraryPage = () => {
 
             <button
               type="button"
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => setShowAllCategories(true)}
               className="text-brand-green text-xs hover:text-green-700 font-bold tracking-wider uppercase transition-colors cursor-pointer"
             >
               Xem tất cả
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {categories.map((cat, idx) => {
-              const categoryId = cat.CategoryID || cat.categoryId || cat.id;
-              const categoryName =
-                cat.Name || cat.CategoryName || cat.name || 'Chủ đề';
-
-              const iconMap = {
-                'Công nghệ thông tin': Cpu,
-                'Kinh tế': Grid,
-                'Kinh tế & Quản trị': Grid,
-                'Luật học': Layers,
-                'Kỹ thuật & Công nghệ': Cpu,
-                'Ngoại ngữ': BookOpen,
-                'Ngôn ngữ & Văn hóa': BookOpen,
-                'Y học & Sức khỏe': Star,
-                'Khoa học cơ bản': Layers,
-                'Kỹ năng mềm': User,
-              };
-
-              const Icon = iconMap[categoryName] || Grid;
-              const isSelected = selectedCategory === categoryId;
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {visibleCategories.map((cat, idx) => {
+              const categoryId = getCategoryId(cat);
+              const categoryName = getCategoryName(cat);
+              const Icon = getCategoryIcon(categoryName);
+              const isSelected = String(selectedCategory) === String(categoryId);
 
               return (
                 <motion.div
@@ -432,7 +455,15 @@ const LibraryPage = () => {
                       key={documentId || idx}
                       className="flex items-center gap-4 group cursor-pointer border-b border-slate-100 last:border-0 pb-3 last:pb-0 relative overflow-hidden"
                     >
-                      <div className="font-black text-2xl text-slate-200/80 group-hover:text-emerald-500 transition-colors shrink-0 font-mono">
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg transition-all shrink-0 font-mono ${
+                          idx === 0
+                            ? 'bg-emerald-50 text-emerald-600'
+                            : idx === 1
+                              ? 'bg-green-50 text-green-600'
+                              : 'bg-slate-100 text-slate-600'
+                        } group-hover:bg-brand-green group-hover:text-white`}
+                      >
                         0{idx + 1}
                       </div>
 
@@ -533,6 +564,113 @@ const LibraryPage = () => {
           </div>
         </section>
       </main>
+
+      <AnimatePresence>
+        {showAllCategories && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 18 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 18 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[82vh] overflow-hidden border border-slate-200 pointer-events-auto"
+            >
+              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-black text-slate-800 uppercase tracking-wider">
+                    Tất cả chủ đề
+                  </h3>
+                  <p className="text-xs text-slate-400 font-semibold mt-1">
+                    Chọn một chủ đề để lọc tài liệu trong thư viện.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAllCategories(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[calc(82vh-96px)]">
+                <div className="mb-5 flex justify-between items-center">
+                  <button
+                    type="button"
+                    onClick={handleClearCategory}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      selectedCategory === null
+                        ? 'bg-brand-green text-white border-brand-green shadow-sm'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-brand-green hover:text-brand-green'
+                    }`}
+                  >
+                    Tất cả tài liệu
+                  </button>
+
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    {categories.length} chủ đề
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {categories.map((cat, idx) => {
+                    const categoryId = getCategoryId(cat);
+                    const categoryName = getCategoryName(cat);
+                    const Icon = getCategoryIcon(categoryName);
+                    const isSelected = String(selectedCategory) === String(categoryId);
+
+                    return (
+                      <motion.div
+                        key={categoryId || idx}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.025 }}
+                        whileHover={{ y: -5 }}
+                        onClick={() => handleSelectCategory(categoryId)}
+                        className={`p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer group bg-white border transition-all duration-300 ${
+                          isSelected
+                            ? 'border-brand-green shadow-[0_4px_20px_rgba(5,150,105,0.15)] ring-4 ring-brand-green/5'
+                            : 'border-slate-200/70 shadow-sm hover:shadow-md'
+                        }`}
+                      >
+                        <div
+                          className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform ${
+                            isSelected
+                              ? 'bg-brand-green text-white shadow-sm shadow-green-500/20'
+                              : 'bg-slate-100 text-slate-500 group-hover:bg-green-50 group-hover:text-brand-green'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                        </div>
+
+                        <h4 className="font-bold text-slate-800 text-xs mb-1.5 truncate max-w-full">
+                          {categoryName}
+                        </h4>
+
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-brand-green transition-colors">
+                          Khám phá
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {categories.length === 0 && (
+                  <div className="py-12 text-center text-slate-400 text-sm font-semibold">
+                    Chưa có chủ đề nào.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <footer className="bg-white border-t border-slate-200/60 py-12 px-6">
         <div className="container mx-auto grid md:grid-cols-4 gap-8">

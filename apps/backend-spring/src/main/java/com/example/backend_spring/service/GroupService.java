@@ -16,6 +16,7 @@ import com.example.backend_spring.repository.StudyGroupRepository;
 import com.example.backend_spring.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -51,9 +52,9 @@ public class GroupService {
         String visibility = normalizeVisibility(request.getVisibility());
 
         StudyGroup group = StudyGroup.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .subject(request.getSubject())
+                .name(normalizeRequiredText(request.getName(), "Tên nhóm không được để trống"))
+                .description(normalizeOptionalText(request.getDescription()))
+                .subject(normalizeOptionalText(request.getSubject()))
                 .visibility(visibility)
                 .createdBy(user)
                 .memberCount(1)
@@ -308,6 +309,42 @@ public class GroupService {
         );
     }
 
+    @Transactional
+    public GroupResponse updateGroup(Long groupId, CreateGroupRequest request, String username) {
+        User currentUser = getUserByUsername(username);
+        StudyGroup group = getGroupById(groupId);
+
+        ensureOwnerOrAdmin(group, currentUser);
+
+        String name = normalizeRequiredText(request.getName(), "Tên nhóm không được để trống");
+        String visibility = normalizeVisibility(request.getVisibility());
+
+        group.setName(name);
+        group.setSubject(normalizeOptionalText(request.getSubject()));
+        group.setDescription(normalizeOptionalText(request.getDescription()));
+        group.setVisibility(visibility);
+
+        StudyGroup savedGroup = studyGroupRepository.save(group);
+        return toGroupResponse(savedGroup, currentUser);
+    }
+
+    @Transactional
+    public Map<String, Object> deleteGroup(Long groupId, String username) {
+        User currentUser = getUserByUsername(username);
+        StudyGroup group = getGroupById(groupId);
+
+        ensureOwnerOrAdmin(group, currentUser);
+
+        groupChatRepository.deleteByGroupId(groupId);
+        groupMemberRepository.deleteByGroupId(groupId);
+        studyGroupRepository.delete(group);
+
+        return Map.of(
+                "message", "Xóa nhóm thành công",
+                "groupId", groupId
+        );
+    }
+
     private void notifyJoinRequestToManagers(StudyGroup group, User requester) {
         String requesterName = getDisplayName(requester);
         String groupName = group.getName();
@@ -377,6 +414,23 @@ public class GroupService {
 
     private boolean isAdmin(User user) {
         return user != null && Role.ADMIN.equals(user.getRole());
+    }
+
+    private String normalizeRequiredText(String value, String message) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new RuntimeException(message);
+        }
+
+        return value.trim();
+    }
+
+    private String normalizeOptionalText(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private String normalizeVisibility(String visibility) {

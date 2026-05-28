@@ -134,6 +134,33 @@ public class GroupController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateGroup(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateGroupRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.updateGroup(id, request, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteGroup(
+            @PathVariable Long id,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.deleteGroup(id, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     private String getUsernameFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 
