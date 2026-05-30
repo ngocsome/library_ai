@@ -28,6 +28,7 @@ const AdminLayout = () => {
     { path: '/admin/categories', label: 'Chủ đề', icon: Tags },
     { path: '/admin/groups', label: 'Nhóm học tập', icon: Users },
     { path: '/admin/forum', label: 'Diễn đàn', icon: MessageSquare },
+    { path: '/admin/forum-categories', label: 'Chủ đề diễn đàn', icon: Tags },
   ];
 
   const handleLogout = () => {

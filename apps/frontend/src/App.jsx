@@ -15,6 +15,9 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 // User pages
 import ProfilePage from './pages/user/ProfilePage';
 
+// Home page
+import HomePage from './pages/home/HomePage';
+
 // Library pages
 import LibraryPage from './pages/library/LibraryPage';
 import DocumentDetailPage from './pages/library/DocumentDetailPage';
@@ -39,6 +42,7 @@ import AdminDocuments from './pages/admin/AdminDocuments';
 import AdminForum from './pages/admin/AdminForum';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminGroups from './pages/admin/AdminGroups';
+import AdminForumCategories from './pages/admin/AdminForumCategories';
 
 // System pages
 import NotificationsPage from './pages/system/NotificationsPage';
@@ -61,7 +65,9 @@ function App() {
         {/* User routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
-            <Route path="/" element={<Navigate to="/library" replace />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<HomePage />} />
+
             <Route path="/profile" element={<ProfilePage />} />
 
             <Route path="/library" element={<LibraryPage />} />
@@ -92,6 +98,7 @@ function App() {
             <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/groups" element={<AdminGroups />} />
             <Route path="/admin/forum" element={<AdminForum />} />
+            <Route path="/admin/forum-categories" element={<AdminForumCategories />} />
           </Route>
         </Route>
 

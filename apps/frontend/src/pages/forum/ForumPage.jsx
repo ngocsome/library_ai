@@ -12,7 +12,7 @@ import {
   MessageSquare,
   BookOpen,
   Zap,
-  HelpCircle
+  HelpCircle,
 } from 'lucide-react';
 import { getPosts, getForumCategories } from '../../services/forumService';
 
@@ -73,13 +73,31 @@ const getCommentCount = (post) => {
   return Array.isArray(comments) ? comments.length : 0;
 };
 
-// Hàm tự động map icon phù hợp theo tên chủ đề diễn đàn
+const getForumCategoryId = (category) =>
+  category?.ForumCatID ||
+  category?.CategoryID ||
+  category?.categoryId ||
+  category?.id ||
+  category?.CategoryId;
+
+const getForumCategoryName = (category) =>
+  category?.Name ||
+  category?.name ||
+  category?.CategoryName ||
+  category?.categoryName ||
+  'Chủ đề';
+
+const getForumCategoryColor = (category) =>
+  category?.Color || category?.color || '#10b981';
+
 const getCategoryIcon = (name) => {
-  const lowerName = String(name).toLowerCase();
+  const lowerName = String(name || '').toLowerCase();
+
   if (lowerName.includes('hỏi đáp')) return HelpCircle;
   if (lowerName.includes('chia sẻ') || lowerName.includes('tài liệu')) return BookOpen;
   if (lowerName.includes('kinh nghiệm')) return Cpu;
   if (lowerName.includes('chung')) return Tag;
+
   return Zap;
 };
 
@@ -106,6 +124,8 @@ const ForumPage = () => {
       } catch (error) {
         console.error('Failed to fetch forum data', error);
         setError(error.response?.data?.message || error.message || 'Không thể tải dữ liệu');
+        setPosts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -128,12 +148,9 @@ const ForumPage = () => {
 
   return (
     <div className="container mx-auto px-6 pt-15 pb-20 space-y-8 relative overflow-hidden max-w-6xl">
-      
-      {/* Background Ambient Glows */}
       <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-gradient-to-br from-emerald-250/15 to-transparent rounded-full filter blur-[120px] pointer-events-none z-0" />
       <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-200/10 to-transparent rounded-full filter blur-[140px] pointer-events-none z-0" />
 
-      {/* Page Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
         <div>
           <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight uppercase leading-none">
@@ -153,10 +170,7 @@ const ForumPage = () => {
         </Link>
       </div>
 
-      {/* Grid Layout 2 Cột */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start relative z-10">
-        
-        {/* Cột trái: DANH MỤC CHỦ ĐỀ ĐƯỢC THIẾT KẾ LẠI HOÀN HẢO */}
         <div className="lg:col-span-1 bg-white rounded-3xl p-5 border border-slate-200/60 shadow-[0_8px_30px_rgba(15,23,42,0.02)] shrink-0">
           <h3 className="font-black text-xs text-slate-800 uppercase tracking-widest mb-4 pb-3 border-b border-slate-100 flex items-center gap-2.5">
             <Compass size={16} className="text-brand-green animate-spin-slow" />
@@ -164,7 +178,6 @@ const ForumPage = () => {
           </h3>
 
           <div className="space-y-1.5">
-            {/* Nút: Tất cả */}
             <button
               type="button"
               onClick={() => setSelectedCategory(null)}
@@ -175,24 +188,24 @@ const ForumPage = () => {
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Compass size={15} className={!selectedCategory ? 'text-brand-green' : 'text-slate-400'} />
+                <Compass
+                  size={15}
+                  className={!selectedCategory ? 'text-brand-green' : 'text-slate-400'}
+                />
                 <span>Tất cả</span>
               </div>
-              
-              {/* Dot LED nhấp nháy phát sáng khi được chọn */}
+
               {!selectedCategory && (
                 <span className="w-2 h-2 bg-brand-green rounded-full shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
               )}
             </button>
 
-            {/* Vòng lặp nạp chủ đề */}
             {categories.map((cat, idx) => {
-              const categoryId =
-                cat.ForumCatID || cat.CategoryID || cat.categoryId || cat.id;
-              const categoryName =
-                cat.Name || cat.name || cat.CategoryName || cat.categoryName || 'Chủ đề';
-              
-              const isSelected = selectedCategory === categoryId;
+              const categoryId = getForumCategoryId(cat);
+              const categoryName = getForumCategoryName(cat);
+              const categoryColor = getForumCategoryColor(cat);
+
+              const isSelected = String(selectedCategory) === String(categoryId);
               const CategoryIcon = getCategoryIcon(categoryName);
 
               return (
@@ -202,37 +215,58 @@ const ForumPage = () => {
                   onClick={() => setSelectedCategory(categoryId)}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer border border-transparent ${
                     isSelected
-                      ? 'bg-emerald-50 text-brand-green border-l-4 border-brand-green shadow-sm'
+                      ? 'bg-emerald-50 text-brand-green border-l-4 shadow-sm'
                       : 'text-slate-500 hover:bg-slate-50/80 hover:text-slate-800'
                   }`}
+                  style={
+                    isSelected
+                      ? {
+                          borderLeftColor: categoryColor,
+                          color: categoryColor,
+                        }
+                      : undefined
+                  }
                 >
-                  <div className="flex items-center gap-2.5">
-                    <CategoryIcon size={15} className={isSelected ? 'text-brand-green' : 'text-slate-400'} />
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <CategoryIcon
+                      size={15}
+                      className={isSelected ? '' : 'text-slate-400'}
+                      style={isSelected ? { color: categoryColor } : undefined}
+                    />
                     <span className="truncate max-w-[150px]">{categoryName}</span>
                   </div>
 
-                  {/* Dot LED nhấp nháy phát sáng */}
                   {isSelected && (
-                    <span className="w-2 h-2 bg-brand-green rounded-full shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
+                    <span
+                      className="w-2 h-2 rounded-full animate-pulse shrink-0"
+                      style={{
+                        backgroundColor: categoryColor,
+                        boxShadow: `0 0 8px ${categoryColor}`,
+                      }}
+                    />
                   )}
                 </button>
               );
             })}
+
+            {!loading && categories.length === 0 && (
+              <div className="py-6 text-center text-xs font-semibold text-slate-400">
+                Chưa có chủ đề diễn đàn.
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Cột phải: Danh sách bài viết thảo luận */}
         <div className="lg:col-span-3 space-y-4">
-          
-          {/* Thông báo lỗi */}
           {error && (
             <div className="bg-rose-50/80 backdrop-blur-sm text-rose-600 p-4.5 rounded-2xl border border-rose-100/50 text-center text-xs font-semibold leading-relaxed shadow-sm">
               <p className="font-extrabold text-sm">{error}</p>
-              <span className="text-[10px] text-slate-400 font-medium block mt-1">Vui lòng thử đăng nhập lại hoặc tải lại trang web.</span>
+              <span className="text-[10px] text-slate-400 font-medium block mt-1">
+                Vui lòng thử đăng nhập lại hoặc tải lại trang web.
+              </span>
             </div>
           )}
 
-          {/* Loading state */}
           {loading ? (
             <div className="flex justify-center items-center py-20 min-h-[250px]">
               <Loader2 className="animate-spin text-brand-green w-8 h-8" />
@@ -254,14 +288,11 @@ const ForumPage = () => {
                   className="block bg-white rounded-3xl shadow-[0_4px_20px_rgba(15,23,42,0.02)] border border-slate-200/60 p-5 hover:shadow-md hover:border-slate-250 transition-all duration-300 group"
                 >
                   <div className="flex items-start gap-4">
-                    
-                    {/* Avatar Gradient */}
                     <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-brand-green to-emerald-400 flex items-center justify-center text-white font-black text-sm shadow-[0_2px_8px_rgba(16,185,129,0.25)] shrink-0 group-hover:scale-105 transition-transform">
                       {authorName?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      {/* Meta top */}
                       <div className="flex gap-2.5 items-center mb-2 flex-wrap">
                         <span className="text-[10px] px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-550 font-bold uppercase tracking-widest border border-slate-150/20">
                           {categoryName}
@@ -272,12 +303,10 @@ const ForumPage = () => {
                         </span>
                       </div>
 
-                      {/* Title */}
                       <h3 className="font-extrabold text-base text-slate-800 mb-3 group-hover:text-brand-green transition-colors truncate">
                         {title}
                       </h3>
 
-                      {/* Footer Discussion Meta */}
                       <div className="flex items-center justify-between text-slate-500 text-xs font-bold flex-wrap gap-y-2 border-t border-slate-50 pt-3">
                         <div className="flex items-center gap-6">
                           <span className="flex items-center gap-1.5 text-slate-450 group-hover:text-brand-green transition-colors">
@@ -296,7 +325,6 @@ const ForumPage = () => {
                           bởi {authorName}
                         </span>
                       </div>
-
                     </div>
                   </div>
                 </Link>
@@ -304,7 +332,6 @@ const ForumPage = () => {
             })
           )}
 
-          {/* Empty state */}
           {!loading && posts.length === 0 && (
             <div className="text-center py-20 bg-white/60 backdrop-blur-sm rounded-[32px] border-2 border-dashed border-slate-200 p-8 shadow-sm flex flex-col items-center justify-center">
               <MessageSquare size={36} className="text-slate-300 mb-3 animate-bounce" />
@@ -316,7 +343,6 @@ const ForumPage = () => {
               </p>
             </div>
           )}
-
         </div>
       </div>
     </div>

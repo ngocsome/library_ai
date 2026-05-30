@@ -10,4 +10,6 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
     List<ForumPost> findAllByOrderByCreatedAtDesc();
 
     List<ForumPost> findByCategoryIdOrderByCreatedAtDesc(Long categoryId);
+
+    boolean existsByCategoryId(Long categoryId);
 }

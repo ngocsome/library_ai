@@ -20,6 +20,21 @@ export const getForumCategories = async () => {
   return response.data;
 };
 
+export const createForumCategory = async (categoryData) => {
+  const response = await api.post('/forum/categories', categoryData);
+  return response.data;
+};
+
+export const updateForumCategory = async (categoryId, categoryData) => {
+  const response = await api.put(`/forum/categories/${categoryId}`, categoryData);
+  return response.data;
+};
+
+export const deleteForumCategory = async (categoryId) => {
+  const response = await api.delete(`/forum/categories/${categoryId}`);
+  return response.data;
+};
+
 export const addComment = async (postId, content, parentId = null) => {
   const response = await api.post(`/forum/posts/${postId}/comments`, {
     content,

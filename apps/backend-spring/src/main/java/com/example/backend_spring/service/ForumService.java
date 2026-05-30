@@ -13,6 +13,7 @@ import com.example.backend_spring.entity.ForumPostLike;
 import com.example.backend_spring.entity.ForumReport;
 import com.example.backend_spring.entity.User;
 import com.example.backend_spring.enums.ReportStatus;
+import com.example.backend_spring.enums.Role;
 import com.example.backend_spring.repository.ForumCategoryRepository;
 import com.example.backend_spring.repository.ForumCommentLikeRepository;
 import com.example.backend_spring.repository.ForumCommentRepository;
@@ -22,6 +23,7 @@ import com.example.backend_spring.repository.ForumReportRepository;
 import com.example.backend_spring.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +46,73 @@ public class ForumService {
                 .stream()
                 .map(this::toCategoryResponse)
                 .toList();
+    }
+
+    @Transactional
+    public ForumCategoryResponse createCategory(Map<String, Object> request, String username) {
+        User currentUser = getUserByUsername(username);
+        ensureAdmin(currentUser);
+
+        String name = normalizeRequiredText(getString(request, "name"), "Tên chủ đề không được để trống");
+        String description = normalizeOptionalText(getString(request, "description"));
+        String color = normalizeOptionalText(getString(request, "color"));
+
+        if (forumCategoryRepository.existsByName(name)) {
+            throw new RuntimeException("Tên chủ đề diễn đàn đã tồn tại");
+        }
+
+        ForumCategory category = ForumCategory.builder()
+                .name(name)
+                .description(description)
+                .color(color)
+                .build();
+
+        ForumCategory savedCategory = forumCategoryRepository.save(category);
+        return toCategoryResponse(savedCategory);
+    }
+
+    @Transactional
+    public ForumCategoryResponse updateCategory(Long id, Map<String, Object> request, String username) {
+        User currentUser = getUserByUsername(username);
+        ensureAdmin(currentUser);
+
+        ForumCategory category = forumCategoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề diễn đàn"));
+
+        String name = normalizeRequiredText(getString(request, "name"), "Tên chủ đề không được để trống");
+        String description = normalizeOptionalText(getString(request, "description"));
+        String color = normalizeOptionalText(getString(request, "color"));
+
+        if (forumCategoryRepository.existsByNameAndIdNot(name, id)) {
+            throw new RuntimeException("Tên chủ đề diễn đàn đã tồn tại");
+        }
+
+        category.setName(name);
+        category.setDescription(description);
+        category.setColor(color);
+
+        ForumCategory savedCategory = forumCategoryRepository.save(category);
+        return toCategoryResponse(savedCategory);
+    }
+
+    @Transactional
+    public Map<String, Object> deleteCategory(Long id, String username) {
+        User currentUser = getUserByUsername(username);
+        ensureAdmin(currentUser);
+
+        ForumCategory category = forumCategoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề diễn đàn"));
+
+        if (forumPostRepository.existsByCategoryId(id)) {
+            throw new RuntimeException("Không thể xóa chủ đề đang có bài viết. Hãy chuyển hoặc xóa bài viết trước.");
+        }
+
+        forumCategoryRepository.delete(category);
+
+        return Map.of(
+                "message", "Xóa chủ đề diễn đàn thành công",
+                "categoryId", id
+        );
     }
 
     public List<ForumPostResponse> getPosts(Long categoryId) {
@@ -283,6 +352,29 @@ public class ForumService {
     private User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+    }
+
+    private void ensureAdmin(User user) {
+        if (user == null || !Role.ADMIN.equals(user.getRole())) {
+            throw new RuntimeException("Bạn không có quyền quản lý chủ đề diễn đàn");
+        }
+    }
+
+    private String normalizeRequiredText(String value, String message) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new RuntimeException(message);
+        }
+
+        return value.trim();
+    }
+
+    private String normalizeOptionalText(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private ForumCategoryResponse toCategoryResponse(ForumCategory category) {

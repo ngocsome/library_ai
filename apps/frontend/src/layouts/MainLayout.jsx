@@ -43,6 +43,11 @@ const MainLayout = () => {
 
   const menuItems = [
     {
+      path: '/home',
+      label: 'Trang chủ',
+      active: location.pathname === '/home' || location.pathname === '/',
+    },
+    {
       path: '/library',
       label: 'Thư viện',
       active:
@@ -99,11 +104,9 @@ const MainLayout = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col relative overflow-hidden font-sans">
-      {/* Background Ambient Glows (Đốm sáng chiều sâu hiện đại) */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-violet-200/20 to-transparent rounded-full filter blur-[120px] pointer-events-none z-0" />
       <div className="absolute bottom-1/4 right-0 w-[600px] h-[600px] bg-gradient-to-tr from-indigo-200/20 to-transparent rounded-full filter blur-[140px] pointer-events-none z-0" />
 
-      {/* SVG Grain Noise (Hiệu ứng hạt cát nghệ thuật mờ) */}
       <div
         className="fixed inset-0 z-0 opacity-[0.15] mix-blend-multiply pointer-events-none"
         style={{
@@ -111,7 +114,6 @@ const MainLayout = () => {
         }}
       ></div>
 
-      {/* Navigation Header */}
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           isScrolled || isMobileMenuOpen
@@ -120,8 +122,7 @@ const MainLayout = () => {
         }`}
       >
         <div className="container mx-auto px-6 flex justify-between items-center">
-          {/* Logo Section */}
-          <Link to="/library" className="flex items-center gap-3 group">
+          <Link to="/home" className="flex items-center gap-3 group">
             <div className="relative overflow-hidden rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-transform duration-300 group-hover:scale-105">
               <img
                 src={logo}
@@ -130,12 +131,13 @@ const MainLayout = () => {
               />
             </div>
             <span className="text-lg font-extrabold tracking-tight text-slate-800 flex items-center gap-1">
-              THƯ VIỆN 
-              <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">AI</span>
+              THƯ VIỆN
+              <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+                AI
+              </span>
             </span>
           </Link>
 
-          {/* Navigation Items (Kén nhộng lơ lửng) */}
           <div className="hidden md:flex items-center gap-1.5 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-200/50 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
             {menuItems.map((item) => (
               <Link
@@ -152,9 +154,7 @@ const MainLayout = () => {
             ))}
           </div>
 
-          {/* Actions & Profile */}
           <div className="flex items-center gap-4.5">
-            {/* Search Form */}
             <form
               onSubmit={handleSearchSubmit}
               className="relative hidden lg:block group"
@@ -185,7 +185,6 @@ const MainLayout = () => {
               )}
             </form>
 
-            {/* Notification Bell */}
             <Link
               to="/notifications"
               className={`hidden sm:flex p-2.5 transition-all duration-300 relative rounded-full ${
@@ -200,19 +199,21 @@ const MainLayout = () => {
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
             </Link>
 
-            {/* User Dropdown Profile */}
             <div className="relative group">
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-indigo-500 p-[2px] cursor-pointer shadow-[0_2px_10px_rgba(124,58,237,0.15)] transition-transform duration-300 hover:scale-105">
                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                   {user.Avatar || user.avatar ? (
-                    <img src={user.Avatar || user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    <img
+                      src={user.Avatar || user.avatar}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <User className="w-4.5 h-4.5 text-slate-600" />
                   )}
                 </div>
               </div>
 
-              {/* Dropdown Card */}
               <div className="absolute right-0 top-full pt-3.5 w-60 hidden group-hover:block animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                 <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-slate-100/80 p-2 overflow-hidden">
                   <div className="px-4 py-3 border-b border-slate-100/80 mb-1.5 bg-slate-50/50 rounded-xl">
@@ -256,7 +257,6 @@ const MainLayout = () => {
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -266,11 +266,9 @@ const MainLayout = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white/95 backdrop-blur-lg mt-3 mx-4 rounded-2xl overflow-hidden border border-slate-200/60 shadow-[0_10px_30px_rgba(0,0,0,0.08)] animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="p-4 space-y-2">
-              {/* Mobile Search Form */}
               <form onSubmit={handleSearchSubmit} className="relative mb-3.5">
                 <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
 
@@ -294,7 +292,6 @@ const MainLayout = () => {
                 )}
               </form>
 
-              {/* Menu Links */}
               {menuItems.map((item) => (
                 <Link
                   key={item.path}
@@ -322,7 +319,6 @@ const MainLayout = () => {
                 Thông báo
               </Link>
 
-              {/* Profile Links */}
               <div className="pt-3 border-t border-slate-100 mt-2 space-y-1">
                 <Link
                   to="/profile"
@@ -357,7 +353,6 @@ const MainLayout = () => {
         )}
       </nav>
 
-      {/* Main Content Render */}
       <main className="flex-1 relative z-10 pt-20">
         <Outlet />
       </main>

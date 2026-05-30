@@ -25,6 +25,46 @@ public class ForumController {
         return ResponseEntity.ok(forumService.getCategories());
     }
 
+    @PostMapping("/categories")
+    public ResponseEntity<?> createCategory(
+            @RequestBody Map<String, Object> request,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(forumService.createCategory(request, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/categories/{id}")
+    public ResponseEntity<?> updateCategory(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(forumService.updateCategory(id, request, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<?> deleteCategory(
+            @PathVariable Long id,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(forumService.deleteCategory(id, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @GetMapping("/posts")
     public ResponseEntity<?> getPosts(@RequestParam(required = false) Long categoryId) {
         return ResponseEntity.ok(forumService.getPosts(categoryId));
@@ -148,13 +188,17 @@ public class ForumController {
     }
 
     private String getOptionalUsernameFromRequest(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
+        try {
+            String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return null;
+            }
+
+            String token = authHeader.substring(7);
+            return jwtService.extractUsername(token);
+        } catch (Exception e) {
             return null;
         }
-
-        String token = authHeader.substring(7);
-        return jwtService.extractUsername(token);
     }
 }
