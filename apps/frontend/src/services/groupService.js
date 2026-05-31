@@ -83,3 +83,13 @@ export const rejectJoinRequest = async (groupId, memberId) => {
   );
   return response.data;
 };
+
+// ==========================
+// GROUP MEMBERS
+// Lấy toàn bộ thành viên đã tham gia nhóm
+// ==========================
+
+export const getGroupMembers = async (groupId) => {
+  const response = await api.get(`/groups/${groupId}/members`);
+  return response.data;
+};

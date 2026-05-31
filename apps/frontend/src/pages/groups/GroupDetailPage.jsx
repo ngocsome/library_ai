@@ -26,6 +26,7 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   leaveGroup,
+  getGroupMembers,
 } from '../../services/groupService';
 import { useAuth } from '../../context/AuthContext';
 
@@ -48,6 +49,10 @@ const GroupDetailPage = () => {
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [processingMemberId, setProcessingMemberId] = useState(null);
   const [leaving, setLeaving] = useState(false);
+
+  const [membersOpen, setMembersOpen] = useState(false);
+  const [groupMembers, setGroupMembers] = useState([]);
+  const [membersLoading, setMembersLoading] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -394,6 +399,156 @@ const GroupDetailPage = () => {
     }
   };
 
+  const getMemberId = (member) => {
+    return (
+      member?.MemberID ||
+      member?.memberId ||
+      member?.UserID ||
+      member?.userId ||
+      member?.Id ||
+      member?.id
+    );
+  };
+
+  const getMemberName = (member) => {
+    return (
+      member?.FullName ||
+      member?.fullName ||
+      member?.Name ||
+      member?.name ||
+      member?.Username ||
+      member?.username ||
+      member?.AuthorName ||
+      member?.authorName ||
+      'Người dùng'
+    );
+  };
+
+  const getMemberEmail = (member) => {
+    return member?.Email || member?.email || '';
+  };
+
+  const getMemberUsername = (member) => {
+    return member?.Username || member?.username || '';
+  };
+
+  const getMemberAvatar = (member) => {
+    return member?.Avatar || member?.avatar || '';
+  };
+
+  const getMemberRoleText = (member) => {
+    const role = String(member?.Role || member?.role || '').toUpperCase();
+
+    if (role === 'ADMIN' || role === 'ROLE_ADMIN') {
+      return 'Quản trị viên';
+    }
+
+    const owner =
+      member?.Owner ||
+      member?.owner ||
+      member?.IsOwner ||
+      member?.isOwner ||
+      false;
+
+    if (owner) {
+      return 'Chủ nhóm';
+    }
+
+    return 'Thành viên';
+  };
+
+  const buildMembersFromGroupAndMessages = () => {
+    const membersFromGroup =
+      group?.Members ||
+      group?.members ||
+      group?.GroupMembers ||
+      group?.groupMembers ||
+      group?.Users ||
+      group?.users ||
+      [];
+
+    const normalizedMembers = Array.isArray(membersFromGroup)
+      ? membersFromGroup
+      : [];
+
+    const membersMap = new Map();
+
+    normalizedMembers.forEach((member) => {
+      const id = getMemberId(member) || getMemberName(member);
+
+      if (id) {
+        membersMap.set(String(id), member);
+      }
+    });
+
+    messages.forEach((msg) => {
+      const id =
+        msg.UserID ||
+        msg.userId ||
+        msg.Users?.UserID ||
+        msg.Users?.id ||
+        msg.Users?.Id;
+
+      const name =
+        msg.Users?.FullName ||
+        msg.AuthorName ||
+        msg.authorName ||
+        'Người dùng';
+
+      const key = id || name;
+
+      if (key && !membersMap.has(String(key))) {
+        membersMap.set(String(key), {
+          UserID: id,
+          FullName: name,
+          Username: msg.Users?.Username || msg.username || '',
+          Email: msg.Users?.Email || msg.email || '',
+          Role: msg.Users?.Role || msg.role || '',
+        });
+      }
+    });
+
+    const currentUserId = getCurrentUserId();
+    const currentUserName = getCurrentUserName();
+
+    if (currentUserId && !membersMap.has(String(currentUserId))) {
+      membersMap.set(String(currentUserId), {
+        UserID: currentUserId,
+        FullName: currentUserName,
+        Username: user?.Username || user?.username || '',
+        Email: user?.Email || user?.email || '',
+        Avatar: user?.Avatar || user?.avatar || '',
+        Role: user?.Role || user?.role || '',
+        Owner: isOwner(),
+      });
+    }
+
+    return Array.from(membersMap.values());
+  };
+
+  const openMembersModal = async () => {
+    try {
+      setMembersOpen(true);
+      setMembersLoading(true);
+
+      const data = await getGroupMembers(groupId);
+      const members = Array.isArray(data) ? data : [];
+
+      setGroupMembers(members);
+    } catch (error) {
+      console.error('Failed to load group members', error);
+
+      const fallbackMembers = buildMembersFromGroupAndMessages();
+      setGroupMembers(fallbackMembers);
+    } finally {
+      setMembersLoading(false);
+    }
+  };
+
+  const closeMembersModal = () => {
+    setMembersOpen(false);
+  };
+
   const formatTime = (dateValue) => {
     if (!dateValue) return '';
 
@@ -643,7 +798,12 @@ const GroupDetailPage = () => {
                 <Video size={18} />
               </button>
 
-              <button className="p-2.5 hover:bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 transition-colors">
+              <button
+                type="button"
+                onClick={openMembersModal}
+                className="p-2.5 hover:bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 transition-colors relative"
+                title="Xem thành viên nhóm"
+              >
                 <Users size={18} />
               </button>
             </div>
@@ -952,6 +1112,134 @@ const GroupDetailPage = () => {
                 onClick={() => fetchJoinRequests(true)}
                 disabled={requestsLoading || Boolean(processingMemberId)}
                 className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold inline-flex items-center gap-2 disabled:opacity-50"
+              >
+                <RefreshCw size={14} />
+                Tải lại danh sách
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {membersOpen && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <Users size={22} />
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">
+                    Thành viên nhóm
+                  </h2>
+                  <p className="text-xs font-semibold text-slate-500 mt-1">
+                    Danh sách người đã tham gia nhóm {getGroupName()}.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeMembersModal}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              {membersLoading ? (
+                <div className="py-16 flex flex-col items-center justify-center gap-3">
+                  <Loader2 className="animate-spin text-emerald-600" size={30} />
+                  <p className="text-sm font-semibold text-slate-500">
+                    Đang tải thành viên...
+                  </p>
+                </div>
+              ) : groupMembers.length === 0 ? (
+                <div className="py-16 text-center">
+                  <Users className="mx-auto text-slate-300 mb-3" size={36} />
+                  <h3 className="font-bold text-slate-800">
+                    Chưa có dữ liệu thành viên
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Backend chưa trả danh sách thành viên hoặc nhóm chưa có ai
+                    nhắn tin.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {groupMembers.map((member, index) => {
+                    const memberId = getMemberId(member) || index;
+                    const fullName = getMemberName(member);
+                    const email = getMemberEmail(member);
+                    const username = getMemberUsername(member);
+                    const roleText = getMemberRoleText(member);
+                    const avatar = getMemberAvatar(member);
+
+                    return (
+                      <div
+                        key={`${memberId}-${index}`}
+                        className="rounded-2xl border border-slate-200 p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-white flex items-center justify-center font-black overflow-hidden shrink-0">
+                          {avatar ? (
+                            <img
+                              src={avatar}
+                              alt={fullName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            fullName?.charAt(0)?.toUpperCase() || 'U'
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-sm text-slate-900 truncate">
+                              {fullName}
+                            </h3>
+
+                            {String(memberId) === String(getCurrentUserId()) && (
+                              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-700">
+                                Bạn
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-slate-500 truncate">
+                            {email || username || 'Không có email'}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`rounded-full px-3 py-1 text-[11px] font-black ${
+                            roleText === 'Chủ nhóm'
+                              ? 'bg-violet-50 text-violet-700'
+                              : roleText === 'Quản trị viên'
+                              ? 'bg-rose-50 text-rose-700'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {roleText}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+              <p className="text-xs font-semibold text-slate-500">
+                Tổng thành viên: {groupMembers.length}
+              </p>
+
+              <button
+                type="button"
+                onClick={openMembersModal}
+                className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold inline-flex items-center gap-2"
               >
                 <RefreshCw size={14} />
                 Tải lại danh sách

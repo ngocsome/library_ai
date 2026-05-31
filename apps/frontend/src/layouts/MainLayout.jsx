@@ -48,6 +48,11 @@ const MainLayout = () => {
       active: location.pathname === '/home' || location.pathname === '/',
     },
     {
+      path: '/news',
+      label: 'Tin tức',
+      active: location.pathname === '/news' || location.pathname.startsWith('/news/'),
+    },
+    {
       path: '/library',
       label: 'Thư viện',
       active:

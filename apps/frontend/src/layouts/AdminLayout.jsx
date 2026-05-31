@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   Search,
   X,
+  Newspaper,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,6 +27,7 @@ const AdminLayout = () => {
     { path: '/admin/users', label: 'Người dùng', icon: Users },
     { path: '/admin/documents', label: 'Tài liệu', icon: FileText },
     { path: '/admin/categories', label: 'Chủ đề', icon: Tags },
+    { path: '/admin/news', label: 'Tin tức', icon: Newspaper },
     { path: '/admin/groups', label: 'Nhóm học tập', icon: Users },
     { path: '/admin/forum', label: 'Diễn đàn', icon: MessageSquare },
     { path: '/admin/forum-categories', label: 'Chủ đề diễn đàn', icon: Tags },
@@ -104,7 +106,10 @@ const AdminLayout = () => {
 
           <nav className="flex-1 py-6 px-3.5 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
             {menuItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive =
+                location.pathname === item.path ||
+                (item.path !== '/admin' && location.pathname.startsWith(`${item.path}/`));
+
               const Icon = item.icon;
 
               return (
@@ -254,10 +259,10 @@ const AdminLayout = () => {
             </button>
 
             <button
-              onClick={() => navigate('/library')}
+              onClick={() => navigate('/home')}
               className="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition-all duration-300 shadow-[0_4px_14px_rgba(124,58,237,0.25)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.35)] transform active:scale-95 cursor-pointer flex items-center gap-2"
             >
-              Xem Thư viện
+              Về Trang chủ
             </button>
           </div>
         </header>

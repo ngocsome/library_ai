@@ -22,7 +22,7 @@ const LoginPage = () => {
       const result = await login(usernameOrEmail, password);
 
       if (result.success) {
-        navigate('/library');
+        navigate('/home', { replace: true });
       } else {
         setError(result.message || 'Đăng nhập thất bại');
       }
@@ -35,7 +35,6 @@ const LoginPage = () => {
 
   return (
     <div>
-      {/* Header section (Transparent clean inline design) */}
       <div className="mb-8 text-center relative">
         <h2 className="text-3xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent tracking-tight">
           Đăng nhập
@@ -45,7 +44,6 @@ const LoginPage = () => {
         </p>
       </div>
 
-      {/* Cybernetic High-Tech Warning Alert */}
       {error && (
         <div className="flex items-center gap-3 bg-rose-50 border border-rose-100/80 p-4 rounded-2xl text-sm mb-6 text-rose-700 animate-in fade-in zoom-in-95 duration-300">
           <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
@@ -53,9 +51,7 @@ const LoginPage = () => {
         </div>
       )}
 
-      {/* Login Form */}
       <form onSubmit={handleLogin} className="space-y-5">
-        {/* Username/Email Input Group */}
         <div className="space-y-2">
           <label className="block text-xs uppercase tracking-wider font-bold text-slate-500">
             Tài khoản
@@ -76,7 +72,6 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Password Input Group */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <label className="block text-xs uppercase tracking-wider font-bold text-slate-500">
@@ -106,15 +101,13 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Ultra-Premium Glowing Button with Shimmer Sweep */}
         <button
           type="submit"
           disabled={loading}
           className="relative w-full group overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_8px_30px_rgb(6,182,212,0.25)] hover:shadow-[0_12px_40px_rgb(6,182,212,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
         >
-          {/* Holographic sweep light effect on hover */}
           <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-          
+
           {loading ? (
             <>
               <Loader2 size={20} className="animate-spin" />
@@ -129,7 +122,6 @@ const LoginPage = () => {
         </button>
       </form>
 
-      {/* Modern High-End Underlined Link Footer */}
       <div className="mt-8 text-center text-sm text-slate-500 relative z-10">
         Chưa gia nhập hệ thống?{' '}
         <Link

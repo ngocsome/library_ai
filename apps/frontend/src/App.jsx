@@ -23,6 +23,10 @@ import LibraryPage from './pages/library/LibraryPage';
 import DocumentDetailPage from './pages/library/DocumentDetailPage';
 import FavoritesPage from './pages/library/FavoritesPage';
 
+// News pages
+import NewsPage from './pages/news/NewsPage';
+import NewsDetailPage from './pages/news/NewsDetailPage';
+
 // Forum pages
 import ForumPage from './pages/forum/ForumPage';
 import CreatePostPage from './pages/forum/CreatePostPage';
@@ -43,6 +47,7 @@ import AdminForum from './pages/admin/AdminForum';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminGroups from './pages/admin/AdminGroups';
 import AdminForumCategories from './pages/admin/AdminForumCategories';
+import AdminNews from './pages/admin/AdminNews';
 
 // System pages
 import NotificationsPage from './pages/system/NotificationsPage';
@@ -74,6 +79,9 @@ function App() {
             <Route path="/library/:docId" element={<DocumentDetailPage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
 
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/news/:newsId" element={<NewsDetailPage />} />
+
             <Route path="/forum" element={<ForumPage />} />
             <Route path="/forum/create" element={<CreatePostPage />} />
             <Route path="/forum/:postId" element={<PostDetailPage />} />
@@ -99,6 +107,7 @@ function App() {
             <Route path="/admin/groups" element={<AdminGroups />} />
             <Route path="/admin/forum" element={<AdminForum />} />
             <Route path="/admin/forum-categories" element={<AdminForumCategories />} />
+            <Route path="/admin/news" element={<AdminNews />} />
           </Route>
         </Route>
 

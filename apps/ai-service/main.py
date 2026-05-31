@@ -68,6 +68,160 @@ def robust_sanitize(text):
     return re.sub(r"[\ud800-\udfff]", "", text)
 
 
+# =========================
+# Anti "không tìm thấy tài liệu" helpers
+# =========================
+
+VI_STOPWORDS = {
+    "là", "gì", "và", "của", "có", "cho", "về", "trong", "các", "một",
+    "những", "được", "không", "nào", "hãy", "giải", "thích", "tôi",
+    "muốn", "tìm", "tài", "liệu", "với", "theo", "khi", "như", "thế",
+    "ở", "để", "này", "đó", "ra", "sao", "bạn", "giúp", "hỏi", "nói"
+}
+
+FORBIDDEN_ANSWER_PATTERNS = [
+    "xin lỗi",
+    "không tìm thấy thông tin",
+    "không thấy thông tin",
+    "không tìm thấy",
+    "tài liệu không cung cấp",
+    "trong tài liệu không có",
+    "tài liệu tham khảo chủ yếu",
+    "không có thông tin liên quan",
+    "không thấy thông tin liên quan",
+    "dựa trên tài liệu được cung cấp",
+    "dựa vào tài liệu được cung cấp",
+    "tài liệu được cung cấp không",
+    "các tài liệu tham khảo mà bạn đã cung cấp",
+]
+
+
+def normalize_words(text: str):
+    text = robust_sanitize(text).lower()
+    text = re.sub(r"[^a-zA-ZÀ-ỹ0-9\s+#.]", " ", text)
+    words = [w.strip() for w in text.split() if len(w.strip()) >= 3]
+    return [w for w in words if w not in VI_STOPWORDS]
+
+
+def is_context_relevant(question: str, context: str) -> bool:
+    """
+    Kiểm tra tài liệu tìm được có thật sự liên quan câu hỏi không.
+    Nếu không liên quan thì không đưa context vào prompt.
+    """
+    question_words = set(normalize_words(question))
+    context_words = set(normalize_words(context[:8000]))
+
+    if not question_words or not context_words:
+        return False
+
+    question_lower = question.lower()
+    context_lower = context.lower()
+
+    important_terms = [
+        "spring boot",
+        "rest api",
+        "jwt",
+        "react",
+        "java",
+        "mysql",
+        "database",
+        "quarkus",
+        "docker",
+        "hibernate",
+        "jpa",
+        "frontend",
+        "backend",
+        "api",
+        "spring security",
+        "cloudinary",
+        "vite",
+        "nodejs",
+        "node js",
+        "fastapi",
+        "ollama",
+        "rag",
+        "faiss",
+    ]
+
+    for term in important_terms:
+        if term in question_lower and term not in context_lower:
+            return False
+
+    overlap = question_words.intersection(context_words)
+
+    return len(overlap) >= 1
+
+
+def contains_forbidden_answer(answer: str) -> bool:
+    answer_lower = robust_sanitize(answer).lower()
+    first_part = answer_lower[:900]
+    return any(pattern in first_part for pattern in FORBIDDEN_ANSWER_PATTERNS)
+
+
+def build_general_prompt(question: str) -> str:
+    return f"""
+Bạn là trợ lý học tập AI của hệ thống Thư viện AI.
+
+YÊU CẦU BẮT BUỘC:
+- Trả lời trực tiếp câu hỏi của người dùng bằng tiếng Việt.
+- Không mở đầu bằng "Xin lỗi".
+- Không nói "không tìm thấy trong tài liệu".
+- Không nói "tài liệu không cung cấp thông tin".
+- Không nói "tài liệu tham khảo chủ yếu đề cập đến".
+- Không nhắc rằng bạn thiếu tài liệu tham khảo.
+- Nếu câu hỏi là kiến thức học tập hoặc kỹ thuật, hãy dùng kiến thức chung để giải thích rõ ràng.
+- Nếu người dùng hỏi tìm tài liệu, hãy gợi ý từ khóa tìm kiếm trong thư viện.
+- Trình bày dễ hiểu, có ví dụ nếu phù hợp.
+
+Nếu câu hỏi là khái niệm kỹ thuật, hãy trả lời theo cấu trúc:
+1. Khái niệm
+2. Cách hoạt động hoặc ý nghĩa
+3. Ví dụ dễ hiểu
+4. Khi nào nên dùng
+
+Câu hỏi:
+{question}
+
+Trả lời trực tiếp:
+"""
+
+
+def build_retry_prompt(question: str) -> str:
+    return f"""
+Bạn là trợ lý học tập AI.
+
+Hãy trả lời trực tiếp câu hỏi sau bằng kiến thức chung.
+
+QUY TẮC BẮT BUỘC:
+- Không được nói "Xin lỗi".
+- Không được nói "không tìm thấy thông tin".
+- Không được nhắc đến tài liệu tham khảo.
+- Không được nói tài liệu không liên quan.
+- Trả lời ngay vào nội dung chính.
+
+Câu hỏi:
+{question}
+
+Trả lời:
+"""
+
+
+def call_llm_with_guard(prompt: str, question: str) -> str:
+    """
+    Gọi LLM, nếu model vẫn trả lời kiểu không tìm thấy tài liệu
+    thì gọi lại bằng prompt thường.
+    """
+    response = llm.invoke(robust_sanitize(prompt))
+    clean_response = robust_sanitize(str(response)).strip()
+
+    if contains_forbidden_answer(clean_response):
+        retry_prompt = build_retry_prompt(question)
+        response = llm.invoke(robust_sanitize(retry_prompt))
+        clean_response = robust_sanitize(str(response)).strip()
+
+    return clean_response
+
+
 def load_vector_store():
     global vector_store
 
@@ -114,54 +268,26 @@ async def chat(request: ChatRequest):
         # Nếu chưa có vector DB thì vẫn chat bình thường
         # =========================
         if not vector_store:
-            prompt = f"""
-Bạn là trợ lý học tập AI của hệ thống Thư viện AI.
-
-Nhiệm vụ:
-- Trả lời trực tiếp, thân thiện, dễ hiểu bằng tiếng Việt.
-- Hỗ trợ sinh viên tìm tài liệu, học tập, sử dụng thư viện, diễn đàn, nhóm học tập.
-- Nếu người dùng hỏi về kiến thức học tập, hãy giải thích rõ ràng và có ví dụ nếu phù hợp.
-- Nếu người dùng hỏi tài liệu cụ thể mà bạn chưa có dữ liệu, hãy hướng dẫn họ tìm trong mục Thư viện.
-- Không bịa rằng bạn đã đọc tài liệu nếu chưa có dữ liệu tài liệu.
-
-Câu hỏi của người dùng:
-{question}
-
-Trả lời:
-"""
-
-            response = llm.invoke(robust_sanitize(prompt))
+            prompt = build_general_prompt(question)
+            clean_response = call_llm_with_guard(prompt, question)
 
             return {
-                "message": robust_sanitize(str(response)),
+                "message": clean_response,
                 "conversationId": robust_sanitize(request.conversationId)
             }
 
         # =========================
         # Nếu đã có vector DB thì tìm tài liệu liên quan
-        # Nhưng nếu tài liệu không liên quan thì vẫn trả lời bằng kiến thức chung
+        # Nếu tài liệu không liên quan thì trả lời bằng kiến thức chung
         # =========================
         docs = vector_store.similarity_search(question, k=12)
 
         if not docs:
-            prompt = f"""
-Bạn là trợ lý học tập AI của hệ thống Thư viện AI.
-
-Nhiệm vụ:
-- Trả lời trực tiếp câu hỏi của người dùng bằng tiếng Việt.
-- Giải thích dễ hiểu, có ví dụ nếu phù hợp.
-- Không nói rằng "không tìm thấy trong tài liệu".
-- Nếu câu hỏi liên quan đến tìm tài liệu, hãy gợi ý từ khóa tìm kiếm trong thư viện.
-
-Câu hỏi:
-{question}
-
-Trả lời:
-"""
-            response = llm.invoke(robust_sanitize(prompt))
+            prompt = build_general_prompt(question)
+            clean_response = call_llm_with_guard(prompt, question)
 
             return {
-                "message": robust_sanitize(str(response)),
+                "message": clean_response,
                 "conversationId": robust_sanitize(request.conversationId)
             }
 
@@ -207,39 +333,50 @@ Trả lời:
 
         context = "\n\n".join(context_parts)
 
+        # Nếu context không liên quan thì bỏ tài liệu, trả lời bằng kiến thức chung
+        if not is_context_relevant(question, context):
+            prompt = build_general_prompt(question)
+            clean_response = call_llm_with_guard(prompt, question)
+
+            return {
+                "message": clean_response,
+                "conversationId": robust_sanitize(request.conversationId)
+            }
+
+        # Nếu context liên quan thì dùng context
         prompt = f"""
 Bạn là Trợ lý học tập AI của hệ thống Thư viện AI.
 
-Nhiệm vụ:
+YÊU CẦU BẮT BUỘC:
 - Trả lời trực tiếp câu hỏi của người dùng bằng tiếng Việt.
-- Ưu tiên sử dụng tài liệu tham khảo nếu tài liệu có liên quan rõ ràng đến câu hỏi.
-- Nếu tài liệu tham khảo không liên quan hoặc không đủ thông tin, hãy bỏ qua tài liệu và trả lời bằng kiến thức chung của bạn.
-- Không được mở đầu bằng các câu như:
-  "Tài liệu không cung cấp thông tin..."
-  "Trong tài liệu không có..."
-  "Tôi xin lỗi, nhưng tài liệu..."
-  "Không tìm thấy thông tin trong tài liệu..."
-  "Dựa trên tài liệu được cung cấp..."
-- Chỉ nhắc đến tên giáo trình và số trang khi nội dung tài liệu thật sự liên quan trực tiếp đến câu hỏi.
+- Chỉ dùng tài liệu tham khảo nếu nó liên quan trực tiếp đến câu hỏi.
+- Nếu tài liệu chưa đủ, hãy bổ sung bằng kiến thức chung.
+- Không mở đầu bằng "Xin lỗi".
+- Không nói "không tìm thấy trong tài liệu".
+- Không nói "tài liệu không cung cấp thông tin".
+- Không nói "tài liệu tham khảo chủ yếu đề cập đến".
+- Không nói "dựa trên tài liệu được cung cấp".
+- Không nói tài liệu không liên quan.
+- Chỉ nhắc tên giáo trình và số trang khi nội dung tài liệu thật sự liên quan trực tiếp.
 - Không bịa tên giáo trình, tên tài liệu hoặc số trang.
 - Trình bày rõ ràng, dễ hiểu, có ví dụ nếu phù hợp.
-- Nếu câu hỏi là khái niệm kỹ thuật, hãy giải thích theo cấu trúc:
-  1. Khái niệm
-  2. Cách hoạt động hoặc ý nghĩa
-  3. Ví dụ dễ hiểu
-  4. Khi nào nên dùng
 
-TÀI LIỆU THAM KHẢO NẾU CÓ LIÊN QUAN:
+Nếu câu hỏi là khái niệm kỹ thuật, hãy trình bày theo cấu trúc:
+1. Khái niệm
+2. Cách hoạt động hoặc ý nghĩa
+3. Ví dụ dễ hiểu
+4. Khi nào nên dùng
+
+Tài liệu tham khảo liên quan:
 {context[:6000]}
 
-CÂU HỎI:
+Câu hỏi:
 {question}
 
-TRẢ LỜI TRỰC TIẾP:
+Trả lời trực tiếp:
 """
 
-        response = llm.invoke(robust_sanitize(prompt))
-        clean_response = robust_sanitize(str(response))
+        clean_response = call_llm_with_guard(prompt, question)
 
         return {
             "message": clean_response,

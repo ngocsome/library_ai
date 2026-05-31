@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +85,27 @@ public class GroupService {
 
         if (existingMember != null) {
             String status = existingMember.getStatus();
+
+            if (status == null || status.isBlank()) {
+                existingMember.setStatus(getDefaultJoinStatus(group));
+                groupMemberRepository.save(existingMember);
+
+                if (GroupMember.STATUS_APPROVED.equalsIgnoreCase(existingMember.getStatus())) {
+                    increaseMemberCount(group);
+
+                    return Map.of(
+                            "message", "Tham gia nhóm thành công",
+                            "status", GroupMember.STATUS_APPROVED
+                    );
+                }
+
+                notifyJoinRequestToManagers(group, user);
+
+                return Map.of(
+                        "message", "Đã gửi yêu cầu tham gia, vui lòng chờ duyệt",
+                        "status", GroupMember.STATUS_PENDING
+                );
+            }
 
             if (GroupMember.STATUS_APPROVED.equalsIgnoreCase(status)) {
                 return Map.of(
@@ -234,6 +256,78 @@ public class GroupService {
                 .stream()
                 .map(this::toJoinRequestResponse)
                 .toList();
+    }
+
+    public List<Map<String, Object>> getGroupMembers(Long groupId, String username) {
+        User currentUser = getUserByUsername(username);
+        StudyGroup group = getGroupById(groupId);
+
+        ensureApprovedMemberOrOwnerOrAdmin(group, currentUser);
+
+        Map<Long, Map<String, Object>> membersMap = new LinkedHashMap<>();
+
+        if (group.getCreatedBy() != null && group.getCreatedBy().getId() != null) {
+            User owner = group.getCreatedBy();
+
+            GroupMember ownerMember = groupMemberRepository
+                    .findByGroupIdAndUserId(groupId, owner.getId())
+                    .orElse(null);
+
+            membersMap.put(
+                    owner.getId(),
+                    toGroupMemberResponseFromUser(
+                            owner,
+                            ownerMember,
+                            group,
+                            GroupMember.STATUS_APPROVED
+                    )
+            );
+        }
+
+        groupMemberRepository
+                .findByGroupIdAndStatusOrderByJoinedAtDesc(groupId, GroupMember.STATUS_APPROVED)
+                .forEach(member -> {
+                    User memberUser = member.getUser();
+
+                    if (memberUser != null && memberUser.getId() != null) {
+                        membersMap.put(
+                                memberUser.getId(),
+                                toGroupMemberResponse(member, group)
+                        );
+                    }
+                });
+
+        groupChatRepository
+                .findByGroupIdOrderByCreatedAtAsc(groupId)
+                .forEach(chat -> {
+                    User chatUser = chat.getUser();
+
+                    if (chatUser == null || chatUser.getId() == null) {
+                        return;
+                    }
+
+                    if (!membersMap.containsKey(chatUser.getId())) {
+                        GroupMember chatMember = groupMemberRepository
+                                .findByGroupIdAndUserId(groupId, chatUser.getId())
+                                .orElse(null);
+
+                        String status = chatMember != null && chatMember.getStatus() != null
+                                ? chatMember.getStatus()
+                                : GroupMember.STATUS_APPROVED;
+
+                        membersMap.put(
+                                chatUser.getId(),
+                                toGroupMemberResponseFromUser(
+                                        chatUser,
+                                        chatMember,
+                                        group,
+                                        status
+                                )
+                        );
+                    }
+                });
+
+        return membersMap.values().stream().toList();
     }
 
     public Map<String, Object> approveJoinRequest(Long groupId, Long memberId, String username) {
@@ -575,6 +669,117 @@ public class GroupService {
                 .createdAt(chat.getCreatedAt())
                 .CreatedAt(chat.getCreatedAt())
                 .build();
+    }
+
+    private Map<String, Object> toGroupMemberResponse(GroupMember member, StudyGroup group) {
+        User user = member.getUser();
+
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        Long userId = user != null ? user.getId() : null;
+        String username = user != null ? user.getUsername() : null;
+        String fullName = user != null ? user.getFullName() : null;
+        String email = user != null ? user.getEmail() : null;
+        Role role = user != null ? user.getRole() : null;
+
+        boolean owner = user != null && isOwner(group, user);
+
+        response.put("id", userId);
+        response.put("Id", userId);
+
+        response.put("userId", userId);
+        response.put("UserID", userId);
+
+        response.put("memberId", userId);
+        response.put("MemberID", userId);
+
+        response.put("groupMemberId", member.getId());
+        response.put("GroupMemberID", member.getId());
+
+        response.put("username", username);
+        response.put("Username", username);
+
+        response.put("fullName", fullName);
+        response.put("FullName", fullName != null && !fullName.isBlank()
+                ? fullName
+                : username
+        );
+
+        response.put("email", email);
+        response.put("Email", email);
+
+        response.put("role", role != null ? role.name() : null);
+        response.put("Role", role != null ? role.name() : null);
+
+        response.put("status", member.getStatus());
+        response.put("Status", member.getStatus());
+
+        response.put("owner", owner);
+        response.put("Owner", owner);
+
+        response.put("joinedAt", member.getJoinedAt());
+        response.put("JoinedAt", member.getJoinedAt());
+
+        return response;
+    }
+
+    private Map<String, Object> toGroupMemberResponseFromUser(
+            User user,
+            GroupMember member,
+            StudyGroup group,
+            String fallbackStatus
+    ) {
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        Long userId = user != null ? user.getId() : null;
+        String username = user != null ? user.getUsername() : null;
+        String fullName = user != null ? user.getFullName() : null;
+        String email = user != null ? user.getEmail() : null;
+        Role role = user != null ? user.getRole() : null;
+
+        boolean owner = user != null && isOwner(group, user);
+
+        response.put("id", userId);
+        response.put("Id", userId);
+
+        response.put("userId", userId);
+        response.put("UserID", userId);
+
+        response.put("memberId", userId);
+        response.put("MemberID", userId);
+
+        response.put("groupMemberId", member != null ? member.getId() : null);
+        response.put("GroupMemberID", member != null ? member.getId() : null);
+
+        response.put("username", username);
+        response.put("Username", username);
+
+        response.put("fullName", fullName);
+        response.put("FullName", fullName != null && !fullName.isBlank()
+                ? fullName
+                : username
+        );
+
+        response.put("email", email);
+        response.put("Email", email);
+
+        response.put("role", role != null ? role.name() : null);
+        response.put("Role", role != null ? role.name() : null);
+
+        String status = member != null && member.getStatus() != null
+                ? member.getStatus()
+                : fallbackStatus;
+
+        response.put("status", status);
+        response.put("Status", status);
+
+        response.put("owner", owner);
+        response.put("Owner", owner);
+
+        response.put("joinedAt", member != null ? member.getJoinedAt() : null);
+        response.put("JoinedAt", member != null ? member.getJoinedAt() : null);
+
+        return response;
     }
 
     private GroupJoinRequestResponse toJoinRequestResponse(GroupMember member) {

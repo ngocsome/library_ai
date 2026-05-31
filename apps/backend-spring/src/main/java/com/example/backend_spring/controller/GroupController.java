@@ -65,6 +65,19 @@ public class GroupController {
         }
     }
 
+    @GetMapping("/{id}/members")
+    public ResponseEntity<?> getGroupMembers(
+            @PathVariable Long id,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            String username = getUsernameFromRequest(httpServletRequest);
+            return ResponseEntity.ok(groupService.getGroupMembers(id, username));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}/chats")
     public ResponseEntity<?> getChats(
             @PathVariable Long id,
